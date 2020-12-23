@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 
 const router = express.Router();
 const User = require("../models/user");
@@ -12,8 +13,45 @@ const util = require("../util/util");
 const wxData = require("../lib/wxData");
 const axios = require("axios");
 
-let latest_time = null;
 let access_token = "";
+
+/*
+    每次读取json文件, 判断access_token字段是否存在, 并且判断record_time字段时常是否超出2小时
+    -> 未超出: 使用它
+    -> 超出: 重新请求并存储
+*/
+const getTokenString = function (callback) {
+    fs.readFile("./lib/access_token.json", (err, data) => {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            let json_data = JSON.parse(data);
+            let cur_unix_time = Math.round(new Date().getTime() / 1000); // 获取当前unix时间戳
+            if (json_data["access_token"] != "" && (cur_unix_time - json_data["record_time"] < 7200)) {
+                access_token = json_data["access_token"];
+                if (callback) callback();
+            }
+            else {
+                // 重新获取AccessToken并存储
+                util.getAccessToken().then(response => {
+                    access_token = response.access_token; // 记录access_token
+                    fs.writeFile("./lib/access_token.json", JSON.stringify({
+                        "access_token": access_token,
+                        "record_time": cur_unix_time // 记录当前获取到数据的unix时间
+                    }), err => {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log('文件写入成功!!!');
+                            if (callback) callback()
+                        }
+                    })
+                })
+            }
+        }
+    })
+}
 
 // 检测是否登陆
 router.get('/isadmin', (req, res, next) => {
@@ -48,20 +86,15 @@ router.post('/login', (req, res, next) => {
                 "isadmin": userinfo.isadmin
             }), { maxAge: 1000 * 60 * 60, httpOnly: true }) // 现在先存一个小时吧
 
-            res.json({
-                code: 1,
-                msg: "登录成功！",
-                userinfo: {
-                    id: userinfo._id,
-                    username: userinfo.username
-                }
-            });
-
-            // 获取AccessToken
-            util.getAccessToken().then(response => {
-                latest_time = new Date(); // 记录当前获取到数据的时间
-                access_token = response.access_token; // 记录access_token
-                console.log(access_token);
+            getTokenString(function () {
+                res.json({
+                    code: 1,
+                    msg: "登录成功！",
+                    userinfo: {
+                        id: userinfo._id,
+                        username: userinfo.username
+                    }
+                });
             })
         }
     })
@@ -152,29 +185,29 @@ router.get("/getuser", function (req, res, next) {
 
 // 获取文章分类接口
 router.get("/category", (req, res, next) => {
-    console.log('查询分类.....', access_token);
-    // axios({
-    //     // url:`https://api.weixin.qq.com/tcb/invokecloudfunction?access_token=${access_token}&env=${wxData.env}&name=FUNCTION_NAME`
-    //     url: `https://api.weixin.qq.com/tcb/databasequery?access_token=${access_token}`,
-    //     data: {
-    //         env: `${wxData.env}`,
-    //         query: `db.collection("category").get()`
-    //     },
-    //     method: "POST",
-    //     headers: {
-    //         "Content-Type": "application/json"
-    //     }
-    // }).then(res => {
-    //     console.log(res);
-    // }).catch(err => {
-    //     console.log('接口请求错误', err);
-    // })
-    // Category.find().sort({ _id: -1 }).then(function (category) {
-    //     res.json({
-    //         userInfo: req.userInfo,
-    //         category: category
-    //     });
-    // });
+    getTokenString(function () {
+        axios({
+            url: `https://api.weixin.qq.com/tcb/databasequery?access_token=${access_token}`,
+            data: {
+                env: `${wxData.env}`,
+                query: `db.collection("category").get()`
+            },
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (response.status == 200) {
+                res.json(response.data)
+            }
+        }).catch(err => {
+            console.log('接口请求错误', err);
+            res.json({
+                msg: "接口请求错误!",
+                err: err
+            })
+        })
+    })
 });
 
 // 新增文章分类

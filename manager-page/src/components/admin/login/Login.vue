@@ -177,7 +177,6 @@ export default {
 </script>
 
 <style>
-/* @import url("https://fonts.googleapis.com/css?family=Roboto"); */
 body.login {
     all: initial;
     font-family: "Roboto", sans-serif;

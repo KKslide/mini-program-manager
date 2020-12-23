@@ -115,8 +115,17 @@ export default {
         getData() {
             this.$axios({ url: '/admin/category' })
                 .then(res => {
-                    console.log(res);
-                    // this.categoryData = res.data.category
+                    let response = res.data.data
+                    .map((v,i)=>{
+                        return {
+                            _id:JSON.parse(v)._id,
+                            name:JSON.parse(v).name,
+                            banner:JSON.parse(v).banner,
+                            addtime:new Date(JSON.parse(v).addtime.$date),
+                            edittime:new Date(JSON.parse(v).edittime.$date)
+                        }
+                    });
+                    this.categoryData = response
                 })
         },
         commitHandle(type){ // 添加分类操作

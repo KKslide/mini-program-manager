@@ -3,6 +3,7 @@
 import AdminComponent from '@/components/admin/index.vue'
 
 /* ********* 管理端 ********** */
+import HomeComponent from '@/components/admin/home/Home.vue'
 import UserManageComponent from '@/components/admin/user/UserManage.vue'
 import CategoryManageComponent from '@/components/admin/category/CategoryManage.vue'
 import ArticleManageComponent from '@/components/admin/article/ArticleManage.vue'
@@ -30,6 +31,11 @@ export default new VueRouter({
             name: 'admin',
             component: AdminComponent,
             children: [
+                {
+                    path: 'home',
+                    name: 'adminhome',
+                    component: HomeComponent
+                },
                 {
                     path: 'category',
                     name: 'category',
