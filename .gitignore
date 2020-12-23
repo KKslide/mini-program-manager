@@ -1,7 +1,10 @@
-/back-end/node_modules
-/back-end/dist
-
-/front-end/node_modules
-/front-end/dist
-back-end/.DS_Store
 .DS_Store
+
+/server/node_modules
+/server/dist
+/server/.DS_Store
+/server/upload/*
+
+/manager-page/node_modules
+/manager-page/dist
+/manager-page/.DS_Store
