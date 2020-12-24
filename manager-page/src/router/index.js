@@ -7,7 +7,6 @@ import HomeComponent from '@/components/admin/home/Home.vue'
 import UserManageComponent from '@/components/admin/user/UserManage.vue'
 import CategoryManageComponent from '@/components/admin/category/CategoryManage.vue'
 import ArticleManageComponent from '@/components/admin/article/ArticleManage.vue'
-import WorkManageComponent from '@/components/admin/work/WorkManage.vue'
 import MassageManageComponent from '@/components/admin/massage/MassageManagement.vue'
 import LoginComponent from '@/components/admin/login/Login'
 /* ********* 管理端 ********** */
@@ -17,7 +16,7 @@ export default new VueRouter({
         {
             path: '/',
             name: 'home',
-            redirect: { name: "article" }
+            redirect: { name: "adminhome" }
         },
         // 后台管理页登陆页面
         {
@@ -45,11 +44,6 @@ export default new VueRouter({
                     path: 'article',
                     name: 'article',
                     component: ArticleManageComponent
-                },
-                {
-                    path: 'workmanage',
-                    name: 'workmanage',
-                    component: WorkManageComponent
                 },
                 {
                     path: 'massage',

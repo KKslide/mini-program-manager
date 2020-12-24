@@ -212,91 +212,143 @@ router.get("/category", (req, res, next) => {
 
 // 新增文章分类
 router.post("/category/add", (req, res, next) => {
-    var name = req.body.name || "";
-    var banner = req.body.banner || "";
-    Category.findOne({ name: name }, function (err, info) {
-        if (err) console.log(err);
-        if (info) {
-            res.json({ code: 0, msg: "出错了！请联系我！" });
-            return false;
-        }
-        var newcate = new Category({
-            name: name,
-            addtime: new Date(),
-            edittime: new Date(),
-            banner: banner
-        });
-        newcate.save();
-        res.json({ code: 1, msg: "新增成功！" });
-    });
+    let obj = {
+        name: req.body.name || "",
+        banner: req.body.banner || "",
+        addtime: new Date(),
+        edittime: new Date()
+    }
+    getTokenString(function () {
+        axios({
+            url: `https://api.weixin.qq.com/tcb/databaseadd?access_token=${access_token}`,
+            data: {
+                env: `${wxData.env}`,
+                query: `db.collection('category').add({data:${JSON.stringify(obj)}})`
+            },
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (response.data.errmsg == 'ok') {
+                res.json({ msg: "添加成功!", code: 1 })
+            } else {
+                res.json({ msg: "添加失败- -", code: 0 })
+            }
+        }).catch(err => {
+            console.log(err);
+            console.log('*********************');
+            console.log(err.data);
+        })
+    })
 });
 
 // 删除文章分类
 router.post('/category/del', (req, res, next) => {
-    var id = req.body.id || "";
-    Category.deleteOne({ _id: id }, function (err) {
-        if (err) {
-            res.json({ code: 0, msg: "出错了 !" })
-            return false;
-        } else {
-            res.json({ code: 1, msg: "删除成功 !" });
-        }
-    });
+    getTokenString(function () {
+        axios({
+            url: `https://api.weixin.qq.com/tcb/databasedelete?access_token=${access_token}`,
+            data: {
+                env: `${wxData.env}`,
+                query: `db.collection("category").where({_id:'${req.body.id}'}).remove()`
+            },
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (response.data.errmsg == 'ok') {
+                res.json({ msg: "删除成功!", code: 1 })
+            } else {
+                res.json({ msg: "删除失败- -", code: 0 })
+            }
+        }).catch(err => {
+            console.log(err);
+            console.log('***********************************');
+            console.log(err.data);
+        })
+    })
 });
 
-// 修改文章分类名称
+// 修改文章分类
 router.post('/category/edit', (req, res, next) => {
-    var name = req.body.name || "";
-    var id = req.body.id || "";
-    var banner = req.body.banner || "";
-    Category.findOne({ _id: id }, function (err, info) {
-        if (err) {
-            res.json({ code: 0, msg: "更新失败，打电话给我吧！" })
+    let obj = {
+        name: req.body.name || "",
+        banner: req.body.banner || "",
+        edittime: new Date()
+    }
+    getTokenString(function () {
+        axios({
+            url: `https://api.weixin.qq.com/tcb/databaseupdate?access_token=${access_token}`,
+            data: {
+                env: `${wxData.env}`,
+                query: `db.collection('category').where({_id:'${req.body.id}'}).update({data:${JSON.stringify(obj)}})`
+            },
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (response.data.errmsg == 'ok') {
+                res.json({ msg: "修改成功!", code: 1 })
+            } else {
+                console.log(response.data);
+                res.json({ msg: "修改失败- -", code: 0 })
+            }
+        }).catch(err => {
             console.log(err);
-        }
-        if (info) {
-            info.name = name;
-            info.banner = banner;
-            info.edittime = new Date();
-            info.save();
-            res.json({ code: 1, msg: "更新成功，哥要睡觉了！" })
-        }
-
-    });
+            console.log('***********************************');
+            console.log(err.data);
+        })
+    })
 });
 
 // 获取文章接口
 router.get("/articles", (req, res, next) => {
-    var resObj = {
-        count: 0, // 总数
-        page: Number(req.query.page || req.body.page || 1), // 当前页
-        limit: 6, // 页容量(每页有多少条数据)
-        pages: 0, // 页总数
-    };
+    /*     var resObj = {
+            count: 0, // 总数
+            page: Number(req.query.page || req.body.page || 1), // 当前页
+            limit: 6, // 页容量(每页有多少条数据)
+            pages: 0, // 页总数
+        };
+    
+        Content.count().then(count => {
+            resObj.count = count; // 
+            resObj.pages = Math.ceil(resObj.count / resObj.limit); // 页总数
+            resObj.page = Math.min(resObj.page, resObj.pages); // 取值不能超过总页数
+            resObj.page = Math.max(resObj.page, 1); // 取值不能小于1
+            var skip = (resObj.page - 1) * resObj.limit;
+            return Content.find().limit(resObj.limit).skip(skip).populate(["category", "user"]).sort({ addtime: -1 });
+        }).then(contents => {
+            res.json({
+                userInfo: req.userInfo,
+                contents: contents,
+                total: resObj.count,
+                pages: resObj.pages,
+                pageSize: resObj.limit
+            });
+        }) */
 
-    Content.count().then(count => {
-        resObj.count = count; // 
-        resObj.pages = Math.ceil(resObj.count / resObj.limit); // 页总数
-        resObj.page = Math.min(resObj.page, resObj.pages); // 取值不能超过总页数
-        resObj.page = Math.max(resObj.page, 1); // 取值不能小于1
-        var skip = (resObj.page - 1) * resObj.limit;
-        return Content.find().limit(resObj.limit).skip(skip).populate(["category", "user"]).sort({ addtime: -1 });
-    }).then(contents => {
-        res.json({
-            userInfo: req.userInfo,
-            contents: contents,
-            total: resObj.count,
-            pages: resObj.pages,
-            pageSize: resObj.limit
-        });
+    getTokenString(function () {
+        axios({
+            url: `https://api.weixin.qq.com/tcb/invokecloudfunction?access_token=${access_token}&env=${wxData.env}&name=getHandler`,
+            data: JSON.stringify({
+                collection: "content"
+            }),
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (response.data.errmsg == 'ok') {
+                res.json(JSON.parse(response.data.resp_data).list)
+            } else {
+                res.json({ code: 0, msg: response.data.errmsg })
+            }
+        }).catch(err => {
+            console.log(err);
+        })
     })
-
-    // Content.find().populate(["category", "user"]).sort({ _id: -1 }).then(function (contents) {
-    //     res.json({
-    //         userInfo: req.userInfo,
-    //         contents: contents
-    //     });
-    // });
 })
 
 // 添加文章接口

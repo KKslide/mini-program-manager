@@ -1,17 +1,19 @@
 <template>
     <div>
         <main>
-            <h1 class="form__content_h1">WELCOME BACK</h1>
+            <h1 class="form__content_h1" @click="checkHandle">
+                WELCOME BACK, <span>CLICK TO CONTUNED..</span>
+            </h1>
         </main>
     </div>
 </template>
 
 <script>
 export default {
-    mounted(){
-        setTimeout(() => {
+    methods: {
+        checkHandle() {
             this.$router.push({ name: 'category' })
-        }, 5000);
+        }
     }
 }
 </script>
@@ -62,6 +64,7 @@ h1.form__content_h1 {
         0 0 40px #ffa500, 0 0 60px #ff0000, 0 0 10px #ff8d00, 0 0 98px #ff0000;
     color: #fff6a9;
     animation: blink 5s infinite;
+    cursor: pointer;
 }
 @keyframes blink {
     20%,

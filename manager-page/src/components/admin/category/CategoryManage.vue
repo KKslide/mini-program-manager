@@ -121,8 +121,14 @@ export default {
                             _id:JSON.parse(v)._id,
                             name:JSON.parse(v).name,
                             banner:JSON.parse(v).banner,
-                            addtime:new Date(JSON.parse(v).addtime.$date),
-                            edittime:new Date(JSON.parse(v).edittime.$date)
+                            addtime:
+                                typeof JSON.parse(v).addtime == "string"
+                                    ? JSON.parse(v).addtime  
+                                    : new Date(JSON.parse(v).addtime.$date),
+                            edittime:
+                                typeof JSON.parse(v).edittime == "string"
+                                        ? JSON.parse(v).edittime  
+                                        : new Date(JSON.parse(v).edittime.$date),
                         }
                     });
                     this.categoryData = response
@@ -189,7 +195,7 @@ export default {
                     url: '/admin/category/del',
                     method: 'post',
                     data: {
-                        "id": row.id
+                        "id": row._id
                     }
                 }).then(res => {
                     if (res.data.code == 1) {
@@ -231,7 +237,7 @@ export default {
         edit(index, row) { // 编辑按钮
             this.handleType="edit";
             this.dialogVisible=true;
-            this.categoryDetail.id=row.id;
+            this.categoryDetail.id=row._id;
             this.categoryDetail.name=row.name;
             this.categoryDetail.banner=row.banner;
         },

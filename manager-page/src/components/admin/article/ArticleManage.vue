@@ -385,6 +385,8 @@ export default {
             this.getCates().then(_=>{
                 this.$axios({ url: '/admin/articles', params: { pageNo: this.curPage, pageSize: 5 }, method: 'get' })
                     .then(res => {
+                        console.log(res.data);
+                        return;
                         this.total = res.data.data[0].total; // 总共的数量
                         this.pages = Math.ceil(this.total/5);
                         // 先保存原格式的文章信息
