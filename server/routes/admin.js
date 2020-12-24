@@ -305,45 +305,88 @@ router.post('/category/edit', (req, res, next) => {
 
 // 获取文章接口
 router.get("/articles", (req, res, next) => {
-    /*     var resObj = {
-            count: 0, // 总数
-            page: Number(req.query.page || req.body.page || 1), // 当前页
-            limit: 6, // 页容量(每页有多少条数据)
-            pages: 0, // 页总数
-        };
-    
-        Content.count().then(count => {
-            resObj.count = count; // 
-            resObj.pages = Math.ceil(resObj.count / resObj.limit); // 页总数
-            resObj.page = Math.min(resObj.page, resObj.pages); // 取值不能超过总页数
-            resObj.page = Math.max(resObj.page, 1); // 取值不能小于1
-            var skip = (resObj.page - 1) * resObj.limit;
-            return Content.find().limit(resObj.limit).skip(skip).populate(["category", "user"]).sort({ addtime: -1 });
-        }).then(contents => {
-            res.json({
-                userInfo: req.userInfo,
-                contents: contents,
-                total: resObj.count,
-                pages: resObj.pages,
-                pageSize: resObj.limit
-            });
-        }) */
+    let pageNo = req.query.pageNo || req.body.pageNo || 1,
+        pageSize = req.query.pageSize || req.body.pageSize || 5,
+        total = 0;
+    getTokenString(function () {
+        axios({ // 1- 先获取总数
+            url: `https://api.weixin.qq.com/tcb/databasecount?access_token=${access_token}`,
+            method: "POST",
+            data: JSON.stringify({
+                env: `${wxData.env}`,
+                query: `db.collection("content").where({isDel:"0"}).count()`,
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(res1 => { // 2- 分页查询数据
+            total = res1.data.count;
+            axios({
+                url: `https://api.weixin.qq.com/tcb/invokecloudfunction?access_token=${access_token}&env=${wxData.env}&name=getHandler`,
+                data: JSON.stringify({
+                    collection: "content",
+                    pageNo: Number(pageNo),
+                    pageSize: Number(pageSize)
+                }),
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(response => {
+                if (response.data.errmsg == 'ok') {
+                    res.json({
+                        code: 1,
+                        data: JSON.parse(response.data.resp_data).list,
+                        total: total
+                    })
+                } else {
+                    res.json({ code: 0, msg: response.data.errmsg })
+                }
+            }).catch(err => {
+                console.log(err);
+            })
+        }).catch(err => {
+            console.log('请求错误', err);
+        })
+    })
+})
 
+// 添加文章接口
+router.post('/articles/add', (req, res, next) => {
+    let newcontent = {
+        title: req.body.title || "",
+        category: req.body.category || "",
+        description: req.body.description || "",
+        video_src: req.body.video_src || "",
+        composition: req.body.composition || "",
+        poster: req.body.poster || req.query.poster || "",
+        isShow: req.body.isShow || req.query.isShow || "1",
+        user: JSON.parse(req.cookies.userInfo).username || 'unknown',
+        isDel: "0",
+        addtime: new Date(),
+        edittime: new Date(),
+        viewnum: 0,
+    };
     getTokenString(function () {
         axios({
-            url: `https://api.weixin.qq.com/tcb/invokecloudfunction?access_token=${access_token}&env=${wxData.env}&name=getHandler`,
-            data: JSON.stringify({
-                collection: "content"
-            }),
+            url: `https://api.weixin.qq.com/tcb/databaseadd?access_token=${access_token}`,
             method: "POST",
+            data: JSON.stringify({
+                env: `${wxData.env}`,
+                query: `db.collection("content").add({data:[${JSON.stringify(newcontent)}]})`,
+            }),
             headers: {
                 "Content-Type": "application/json"
             }
         }).then(response => {
+            console.log(response.data);
             if (response.data.errmsg == 'ok') {
-                res.json(JSON.parse(response.data.resp_data).list)
+                res.json({
+                    code: 1,
+                    msg: "添加成功!"
+                })
             } else {
-                res.json({ code: 0, msg: response.data.errmsg })
+                res.json({ code: 0, msg: "添加失败!" })
             }
         }).catch(err => {
             console.log(err);
@@ -351,73 +394,61 @@ router.get("/articles", (req, res, next) => {
     })
 })
 
-// 添加文章接口
-router.post('/articles/add', (req, res, next) => {
-    var title = req.body.title || "";
-    var category = req.body.category || "";
-    var description = req.body.description || "";
-    var video_src = req.body.video_src || "";
-    var content = req.body.content || "";
-    var minpic_url = req.body.minpic_url || req.query.minpic_url || "";
-    var isShow = req.body.isShow || req.query.isShow || 1;
-    var newcontent = new Content({
-        title: title,
-        category: category,
-        description: description,
-        video_src: video_src,
-        composition: content,
-        minpic_url: minpic_url,
-        addtime: new Date(),
-        num: 0,
-        isShow: isShow,
-        user: JSON.parse(req.cookies.userInfo)._id || 'unknown'
-    });
-    newcontent.save();
-    res.json({ code: 1, msg: "添加文章成功 !" })
-})
-
 // 删除文章接口
 router.post('/articles/del', (req, res, next) => {
     var id = req.body.id || req.query.id || "";
-    Content.deleteOne({ _id: id }, function (err) {
-        if (err) {
-            res.json({ code: 0, msg: "出错了 !" })
-            return false;
-        } else {
-            res.json({ code: 1, msg: "删除成功 !" });
-        }
-    });
+    getTokenString(function () {
+        axios({
+            url: `https://api.weixin.qq.com/tcb/databasedelete?access_token=${access_token}`,
+            method: "POST",
+            data: JSON.stringify({
+                env: `${wxData.env}`,
+                query: `db.collection("content").doc('${id}').remove()`,
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (response.data.errmsg == "ok") {
+                res.json({ code: 1 })
+            }
+        }).catch(err => {
+            console.log(err);
+        })
+    })
 });
 
 // 编辑文章接口
-router.post("/content/edit", function (req, res) {
-    var id = req.query.id || req.body.id || "";
-    var title = req.body.title || "";
-    var category = req.body.category || "";
-    var description = req.body.description || "";
-    var video_src = req.body.video_src || "";
-    var minpic_url = req.body.minpic_url || "";
-    var content = req.body.content || "";
-    var isShow = req.body.isShow || req.query.isShow || 1;
-    var comment = req.body.comment || req.query.comment || [];
-    Content.update({ _id: id }, {
-        title: title,
-        category: category,
-        description: description,
-        video_src: video_src,
-        minpic_url: minpic_url,
-        composition: content,
-        comment: comment,
-        isShow: isShow,
-        user: JSON.parse(req.cookies.userInfo)._id
-    }).then(function () {
-        res.json({
-            // userInfo: req.userInfo,
-            code: 1,
-            message: "ok!修改成功"
-        });
-    }).catch(err => {
-        console.log(err);
+router.post("/articles/edit", function (req, res) {
+    let id = req.query._id || req.body._id;
+    let obj = {
+        title: req.query.title || req.body.title || "",
+        category: req.query.category || req.body.category || "",
+        description: req.query.description || req.body.description || "",
+        video_src: req.query.video_src || req.body.video_src || "",
+        poster: req.query.poster || req.body.poster || "",
+        composition: req.query.composition || req.body.composition || "",
+        isShow: req.query.isShow || req.body.isShow || "1",
+        user: JSON.parse(req.cookies.userInfo).username
+    }
+    getTokenString(function () {
+        axios({
+            url: `https://api.weixin.qq.com/tcb/databaseupdate?access_token=${access_token}`,
+            method: "POST",
+            data: JSON.stringify({
+                env: `${wxData.env}`,
+                query: `db.collection("content").doc('${id}').update({data:${JSON.stringify(obj)}})`,
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (response.data.errmsg == "ok") {
+                res.json({ code: 1 })
+            }
+        }).catch(err => {
+            console.log(err);
+        })
     })
 });
 
@@ -427,6 +458,7 @@ router.post("/img_upload", function (req, res) {
     form.uploadDir = "./upload";
     form.keepExtensions = true;
     form.parse(req, function (err, fields, files) {
+        let image = files.image || files.file;
         if (err) {
             console.log(err);
             res.json({ code: 0, msg: "上传失败！" })
@@ -435,8 +467,10 @@ router.post("/img_upload", function (req, res) {
             res.json({
                 code: 1,
                 msg: "上传成功！",
-                path: 'http://' + ip + '/' + path.basename(files.image.path),
-                imageUrl: 'http://' + ip + '/' + path.basename(files.image.path),
+                errno: 0,
+                path: 'http://' + ip + '/' + path.basename(image.path),
+                imageUrl: 'http://' + ip + '/' + path.basename(image.path),
+                data: ['http://' + ip + '/' + path.basename(image.path)]
             })
         }
     })

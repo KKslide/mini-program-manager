@@ -1,19 +1,18 @@
 <template>
     <div>
-        <h3>{{aaa}}</h3>
         <el-table
             :data="curComment"
-            border="true"
+            border
             style="width: 100%"
             :cell-class-name="setCell"
         >
-            <el-table-column prop="time" label="日期" width>
+            <el-table-column prop="addtime" label="日期" width>
                 <template slot-scope="scope">
-                    <p>{{scope.row.time|date}}</p>
+                    <p>{{scope.row.addtime|date}}</p>
                 </template>
             </el-table-column>
-            <el-table-column prop="user" label="用户"></el-table-column>
-            <el-table-column prop="comment" label="留言内容" width="400"></el-table-column>
+            <el-table-column prop="guest_id" label="用户ID"></el-table-column>
+            <el-table-column prop="com_content" label="留言内容" width="400"></el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button
@@ -93,26 +92,16 @@ export default {
         },
         handleCheckComment(index, row) {
             this.innerVisible = true;
-            this.commentDetail = row.comment;
+            this.commentDetail = row.com_content;
         },
-        getCommentList(id) {
-            this.$axios({
-                url: '/admin/comment',
-                params: {id:this.curID}
-            }).then(res => {
-                this.curComment = res.data;
-            })
-        }
     },
     props: ['curChosenArcComment', 'upDateArc'],
     mounted() {
-        this.curID = this.curChosenArcComment.id;
-        this.getCommentList(this.curID);
+        this.curComment = this.curChosenArcComment.comment;
     },
     watch: {
         curChosenArcComment(nv, ov) {
-            this.curID = nv.id; // 更新id
-            this.getCommentList(this.curID); // 重新获取列表
+            this.curComment = nv.comment;
         }
     }
 };

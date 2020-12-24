@@ -4,27 +4,32 @@
         <el-table :data="articleData" border style="width: 100%" :cell-class-name="setIdColumn">
             <el-table-column prop="id" label="文章ID"></el-table-column>
             <el-table-column prop="title" label="文章标题"></el-table-column>
-            <el-table-column prop="category" label="文章分类">
-                <!-- <template slot-scope="scope">
-                    <p>{{scope.row.category|getCatName}}</p>
-                </template> -->
-            </el-table-column>
+            <el-table-column prop="category" label="文章分类"></el-table-column>
             <el-table-column label="添加时间">
                 <template slot-scope="scope">
                     <p>{{scope.row.addtime|date}}</p>
                 </template>
             </el-table-column>
+            <el-table-column label="修改时间">
+                <template slot-scope="scope">
+                    <p>{{scope.row.edittime|date}}</p>
+                </template>
+            </el-table-column>
             <el-table-column prop="viewnum" label="阅读量"></el-table-column>
-            <el-table-column prop="comment_num" label="评论">
+            <el-table-column prop="comment" label="评论">
                 <template slot-scope="scope">
                     <el-button
                         @click="checkComment(scope.row)"
                         type="text"
                         size="normal"
-                    >{{scope.row.comment_num}}</el-button>
+                    >{{scope.row.comment.length}}</el-button>
                 </template>
             </el-table-column>
-            <el-table-column prop="isShow" label="是否显示"></el-table-column>
+            <el-table-column prop="isShow" label="是否显示">
+                <template slot-scope="scope">
+                    <p>{{scope.row.isShow=="1"?"是":"否"}}</p>
+                </template>
+            </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button
@@ -95,18 +100,18 @@
                         <el-input v-model="form.title" autocomplete="off"></el-input>
                     </el-form-item>
                     <!-- 是否显示 -->
-                    <el-form-item label="是否显示" :label-width="formLabelWidth" prop="is_show">
+                    <el-form-item label="是否显示" :label-width="formLabelWidth" prop="isShow">
                         <el-switch
-                            v-model="form.is_show"
+                            v-model="form.isShow"
                             active-color="#13ce66"
                             inactive-color="#ff4949"
-                            active-value="0"
-                            inactive-value="1"
+                            active-value="1"
+                            inactive-value="0"
                         ></el-switch>(绿色为开启显示,选择关闭则不会在页面中显示)
                     </el-form-item>
                     <!-- 文章分类 -->
                     <el-form-item label="文章分类" :label-width="formLabelWidth" prop="category">
-                        <el-select v-model="form.category" placeholder="请选文章分类">
+                        <el-select v-model="form.category" placeholder="请选文章分类" popper-class="contentManageDialog">
                             <el-option v-for="(v,i) in categoryData" :key="i" :label="v.name" :value="v.id" ></el-option>
                         </el-select>
                     </el-form-item>
@@ -119,12 +124,12 @@
                         <el-input v-model="form.video_src" autocomplete="off"></el-input>
                     </el-form-item>
                     <!-- 缩略图 -->
-                    <el-form-item label="缩略图" :label-width="formLabelWidth" prop="minpic_url">
+                    <el-form-item label="缩略图" :label-width="formLabelWidth" prop="poster">
                         <form id="minPicForm" method="post" enctype="multipart/form-data">
                             <!-- 单图片上传 -->
                             <el-upload
                                 class="avatar-uploader"
-                                v-model="form.minpic_url"
+                                v-model="form.poster"
                                 action="'string'"
                                 list-type="picture-card"
                                 :auto-upload="false"
@@ -201,7 +206,7 @@
                         </form>
                     </el-form-item>
                     <!-- 文章内容 -->
-                    <el-form-item label="文章内容" :label-width="formLabelWidth" prop="content">
+                    <el-form-item label="文章内容" :label-width="formLabelWidth" prop="composition">
                         <div id="wangEditor"></div>
                     </el-form-item>
                 </el-form>
@@ -225,14 +230,6 @@ export default {
         return {
             originArticleData: null, // 接口传过来的
             articleData: [ // 转化好的文章列表格式
-                // {
-                //   id: 'sadfsadfsdaf',
-                //   title: 'aaa',
-                //   category: 'AA',
-                //   user: 'kk',
-                //   addtime: '2016-05-02',
-                //   num: 188
-                // }
             ],
             total: 1, // 总条数
             pages: 1, // 总页数
@@ -261,24 +258,23 @@ export default {
             //   cropper配置------------------------------------------------------
 
             form: {
-                title: '',
-                category: '',
-                description: '',
-                video_src: '',
-                content: '',
-                minpic_url: '',
+                title: '', // 文章标题
+                category: '', // 文章分类
+                description: '', // 文章简述
+                video_src: '', // 视频地址
+                composition: '', // 文章内容
+                poster: '', // 缩略图
+                isShow:"1" // 文章是否显示  "1"-显示;"0"-不显示
             },
-            isShow: "1",
+            isShow: "1", // 文章是否显示
             formLabelWidth: '90px',
             editor: null, // wangEditor编辑器实例
-            editorOption: { //   富文本编辑器配置
-            },
             rules: { // 校验规则
                 title: [{ required: true, message: '写一下文章标题啦', trigger: 'blur' }],
                 category: [{ required: true, message: '选一下文章类型啦', trigger: 'blur' }],
-                minpic_url: [{ required: true, message: '没有上传封面图片噢', trigger: 'blur' }],
+                poster: [{ required: true, message: '没有上传封面图片噢', trigger: 'blur' }],
                 description: [{ required: true, message: '选一下文章类型啦', trigger: 'blur' }],
-                content: [{ required: true, message: '文章没有写东西呢', trigger: 'blur' }],
+                composition: [{ required: true, message: '文章没有写东西呢', trigger: 'blur' }],
             },
         }
     },
@@ -287,7 +283,8 @@ export default {
         targetUrl: {
             // 上传地址
             type: String,
-            default: '/pic/upload'
+            // default: '/pic/upload' // 线上环境
+            default: '/admin/img_upload' // 本地测试
         },
         multiple: {
             // 多图开关
@@ -355,7 +352,7 @@ export default {
                 this.form[key] = ''
             }
             // 暂时先写死一个
-            this.form["minpic_url"] = 'http://example.kkslide.fun/upload_6aa9339ff86b4ba10446744336f486ca';
+            this.form["poster"] = 'http://example.kkslide.fun/upload_6aa9339ff86b4ba10446744336f486ca';
         },
         handleClose(done) { //   在关闭窗口前的处理操作
             this.confirmClose(this.close, done)
@@ -385,27 +382,21 @@ export default {
             this.getCates().then(_=>{
                 this.$axios({ url: '/admin/articles', params: { pageNo: this.curPage, pageSize: 5 }, method: 'get' })
                     .then(res => {
-                        console.log(res.data);
-                        return;
-                        this.total = res.data.data[0].total; // 总共的数量
-                        this.pages = Math.ceil(this.total/5);
+                        this.total = res.data.total; // 总共的数量
+                        this.pages = Math.ceil(this.total/5); // 总页数
                         // 先保存原格式的文章信息
                         this.originArticleData = res.data.data;
                         var newContents = [];
                         res.data.data.forEach(v => {
                             newContents.push({
-                                id: v.id,
+                                id: v._id,
                                 title: v.title,
-                                category: ( _id => {
-                                    var res = this.categoryData.filter(v=>{
-                                        return v.id==_id;
-                                    });
-                                    return res.length==0?'unknown':res[0].name;
-                                })(v.category),
+                                category:v.category[0].name,
                                 addtime: v.addtime,
+                                edittime:v.edittime,
                                 viewnum: v.viewnum,
-                                isShow: v.is_show == '0' ? '是' : '否',
-                                comment_num: v.comment_num
+                                isShow: v.isShow,
+                                comment: v.comment
                             })
                         })
                         this.articleData = newContents; // 格式化后的文章信息
@@ -425,7 +416,12 @@ export default {
             return new Promise((resolve,reject)=>{
                 this.$axios({ url: '/admin/category',params })
                     .then(res => {
-                        this.categoryData = res.data.data
+                        this.categoryData = res.data.data.map((v,i)=>{
+                            return {
+                                name: JSON.parse(v).name,
+                                id:JSON.parse(v)._id
+                            }
+                        })
                         resolve()
                     })
             })
@@ -465,7 +461,7 @@ export default {
                     }
                     if (this.dialogType == 'edit') { // 编辑文章
                         // 需要对content内容进行字符转义, 否则会出事, 主要可能是pre标签的内容出现引号会出事
-                        this.form.content = this.form.content.replace(/'/g,"\\'").replace(/"/g,'\\"');
+                        this.form.composition = this.form.composition.replace(/'/g,"\\'").replace(/"/g,'\\"');
                         this.$axios({
                             url: '/admin/articles/edit',
                             method: 'post',
@@ -525,30 +521,21 @@ export default {
 
         },
         handleEdit(index, row) { // 编辑文章
-            this.minpic_url_list = [] // 先清空
-            let id = row.id
-            let nowForm = {};
-            this.originArticleData.map(v => {
-                if (v.id == id) {
-                    nowForm = v
-                }
-            });
-            nowForm.category = row.category
-            nowForm.content = nowForm.composition
-            nowForm.id = id
-            this.categoryData.map(v => { if (v.name == nowForm.category) nowForm.category = v.id })
-            this.form = nowForm
-            this.dialogType = 'edit'
-            if (nowForm.minpic_url != "") {
-                this.minpic_url_list.push({ url: nowForm.minpic_url })
-                this.imageUrl = nowForm.minpic_url
-                this.form.minpic_url = nowForm.minpic_url
-            } else {
-                this.hideUpload = false
-            }
-            this.isShow = row.is_show == '是' ? '1' : '0';
             this.$nextTick(_=>{
-                this.editor.txt.html(this.form.composition);
+                this.minpic_url_list = [] // 1-清空缩略图
+                let nowForm = deepClone(this.originArticleData.filter(v => { return v._id == row.id })[0]); // 2-过滤出当前编辑的数据
+                nowForm.category = this.categoryData.filter(v=>{ return v.name == row.category })[0].id; // 4-重新设置分类id
+                if (nowForm.poster != "") { // 5-重新设置当前数据的文章缩略图
+                    this.minpic_url_list.push({ url: nowForm.poster })
+                    this.imageUrl = nowForm.poster
+                } else {
+                    this.hideUpload = false
+                }
+                this.form = nowForm; // 6-覆盖当前正在编辑的数据
+                this.dialogType = 'edit'; // 7-设置当前状态为编辑状态
+                this.$nextTick(_=>{
+                    this.editor.txt.html(this.form.composition);
+                })
             })
         },
 
@@ -563,7 +550,7 @@ export default {
                     uploadImgAccept: ["jpg", "jpeg", "png", "gif", "bmp"], // 限制上传图片类型
                     uploadImgMaxLength: 1, // 一次最多上传 1张图片
                     uploadImgServer: "/pic/upload", // 图片上传接口图片
-                    linkImgCallback: this.internetPic, // 上传网络图片成功回调
+                    // linkImgCallback: this.internetPic, // 上传网络图片成功回调
                     uploadImgMaxSize: 2 * 1024 * 1024, // 限制上传图片大小为 2M
                     uploadImgTimeout: 60 * 1000, // 上传图片超时时间
                     uploadFileName: "file",
@@ -572,15 +559,12 @@ export default {
                     },
                     pasteFilterStyle: false, // 关闭粘贴样式过滤
                     pasteIgnoreImg: false, // 忽略粘贴的图片 - 先不忽略
-                    onblur: html => this.form.content = html, // 编辑区域 和 blur（失焦）- 同步form表单
-                    onfocus: html => this.form.content = html, // 编辑区域 focus（聚焦）- 同步form表单
-                    onchange: html => this.form.content = html, // 编辑区域 focus（鼠标点击、键盘打字等）- 同步form表单
+                    onblur: html => this.form.composition = html, // 编辑区域 和 blur（失焦）- 同步form表单
+                    onfocus: html => this.form.composition = html, // 编辑区域 focus（聚焦）- 同步form表单
+                    onchange: html => this.form.composition = html, // 编辑区域 focus（鼠标点击、键盘打字等）- 同步form表单
                 });
                 this.editor.create();
             })
-        },
-        internetPic (src) { // 上传网络图片成功回调
-            // console.log(src);
         },
         editorDestroy () { // 销毁编辑器
             this.editor.destroy()
@@ -595,26 +579,22 @@ export default {
             this.dialogImageUrl = this.imageUrl
             this.dialogVisible = true
         },
-        mouseEnter() {//鼠标划入显示“重新上传”
+        mouseEnter() { // 鼠标移入显示“重新上传”
             this.$refs.reupload.style.display = 'block'
             if (this.$refs.failUpload.style.display === 'block') {
                 this.$refs.failUpload.style.display = 'none'
             }
             this.$refs.singleImg.style.opacity = '0.6'
         },
-        mouseLeave() {
-            // 鼠标划出隐藏“重新上传”
+        mouseLeave() { // 鼠标移出去掉"重新上传"
             this.$refs.reupload.style.display = 'none'
             this.$refs.singleImg.style.opacity = '1'
         },
-        handleCrop(files, fileList) {
-            // 点击弹出剪裁框
+        handleCrop(files, fileList) { // 点击弹出剪裁框
             this.cropperModel = true
             this.file = files
-            //  this.imageUrl = file.url
         },
-        upload(data) {
-            // 自定义upload事件
+        upload(data) { // 自定义upload事件
             this.$refs.uploading.style.display = 'block'
             let imgData = new FormData();
             let fileOfBlob = new File([data],'uploadPic.'+data.type.split('/')[1]);
@@ -628,7 +608,7 @@ export default {
                     const currentPic = res.data.imageUrl
                     this.$emit('imgupload', currentPic)
                     this.imageUrl = currentPic
-                    this.form.minpic_url = currentPic
+                    this.form.poster = currentPic
                     // console.log('上传成功,url为 ', this.imageUrl)
                 } else {
                     // 上传失败则显示上传失败，如多图则从图片列表删除图片

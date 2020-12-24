@@ -117,7 +117,7 @@ p {
     }
 }
 /* 作品管理 下拉框的最后一个显示不完全 看着难受 */
-.workManageDialog{
+.workManageDialog,.contentManageDialog{
     li.el-select-dropdown__item:last-child{
         margin-bottom: 10px;
     }
