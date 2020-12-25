@@ -1,8 +1,17 @@
 <template>
     <div id="article">
         <!-- 文章列表 -->
-        <el-table :data="articleData" border style="width: 100%" :cell-class-name="setIdColumn">
+        <el-table :data="articleData" v-loading="tableLoading" border style="width: 100%" :cell-class-name="setIdColumn">
             <el-table-column prop="id" label="文章ID"></el-table-column>
+            <el-table-column prop="poster" label="缩略图">
+                <template slot-scope="scope">
+                    <el-image
+                        style="width: 148px; height: 96px"
+                        :src="scope.row.poster"
+                        fit="cover"
+                    ></el-image>
+                </template>
+            </el-table-column>
             <el-table-column prop="title" label="文章标题"></el-table-column>
             <el-table-column prop="category" label="文章分类"></el-table-column>
             <el-table-column label="添加时间">
@@ -55,6 +64,7 @@
         </el-dialog>
         <!-- 评论列表弹窗 -->
 
+        <!-- 添加文章按钮 -->
         <el-button
             type="text"
             @click="
@@ -222,9 +232,8 @@
 
 <script>
 import CommentCom from './CommentManage' // 评论模块
-import Cropper from './Cropper'
-import { IsURL, deepClone } from "../../../utils/utils"
-let that;
+import Cropper from './Cropper' // 裁切模块
+import { IsURL, deepClone } from "../../../utils/utils" // util函数
 export default {
     data() {
         return {
@@ -241,6 +250,7 @@ export default {
             dialog: false,
             dialogType: null, // 判断是添加还是编辑
             loading: false,
+            tableLoading:true, // 表格loading
             curChosenArcData: {}, // 当前选中文章的评论数据
             commentModel: false, // 评论模块弹窗
             hideUpload: false, //   缩略图上传按钮隐藏
@@ -396,10 +406,12 @@ export default {
                                 edittime:v.edittime,
                                 viewnum: v.viewnum,
                                 isShow: v.isShow,
-                                comment: v.comment
+                                comment: v.comment,
+                                poster:v.poster
                             })
                         })
                         this.articleData = newContents; // 格式化后的文章信息
+                        this.tableLoading = false;
                     })
             })
         },
@@ -409,6 +421,7 @@ export default {
         },
         pageChange(currentPage) { // 点击分页按钮
             this.curPage = currentPage;
+            this.tableLoading=true;
             this.getArticles();
         },
         getCates() { // 获取文章分类
@@ -454,7 +467,8 @@ export default {
                                 });
                             }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
                         }).then(() => {
-                            this.getArticles()
+                            this.tableLoading=true;
+                            this.getArticles();
                             this.close = true;
                             this.$refs.drawer.closeDrawer();
                         })
@@ -479,7 +493,8 @@ export default {
                                 });
                             }
                         }).then(() => {
-                            this.getArticles()
+                            this.tableLoading=true;
+                            this.getArticles();
                             this.close = true;
                             this.$refs.drawer.closeDrawer();
                         })
@@ -510,7 +525,8 @@ export default {
                         });
                     }
                 }).then(() => {
-                    this.getArticles()
+                    this.tableLoading=true;
+                    this.getArticles();
                 })
             }).catch(() => {
                 this.$message({

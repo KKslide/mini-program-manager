@@ -4,7 +4,7 @@ const fs = require("fs");
 
 const router = express.Router();
 const User = require("../models/user");
-const Category = require("../models/category");
+// const Category = require("../models/category");
 const Content = require("../models/content");
 const Massage = require("../models/massage");
 const Visitor = require("../models/visitor");
@@ -363,8 +363,8 @@ router.post('/articles/add', (req, res, next) => {
         isShow: req.body.isShow || req.query.isShow || "1",
         user: JSON.parse(req.cookies.userInfo).username || 'unknown',
         isDel: "0",
-        addtime: new Date(),
-        edittime: new Date(),
+        addtime: new Date().getTime(), // unix时间戳,单位是毫秒,转换成描述需要除以1000
+        edittime: new Date().getTime(), // unix时间戳
         viewnum: 0,
     };
     getTokenString(function () {
