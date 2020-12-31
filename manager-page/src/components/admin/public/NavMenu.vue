@@ -41,7 +41,6 @@ export default {
         },
         logout() {
             this.$axios.get('/admin/logout').then(res => {
-                console.log('!!!!!!!!');
                 if (res.data.code == 1) {
                     this.$message({
                         type: "success",

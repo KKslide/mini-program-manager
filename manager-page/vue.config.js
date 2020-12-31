@@ -12,7 +12,6 @@ module.exports = {
     productionSourceMap: false, // 生产环境是否生成 sourceMap 文件
     filenameHashing: true, // 文件后缀哈希值, 用于控制缓存
     lintOnSave: false, //设置是否在开发环境下每次保存代码时都启用 eslint验证
-    productionSourceMap: false, // 生产环境的 source map
     devServer: {
         // 跨域代理配置
         proxy: {
