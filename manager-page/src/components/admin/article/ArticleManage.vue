@@ -293,8 +293,8 @@ export default {
         targetUrl: {
             // 上传地址
             type: String,
-            // default: '/pic/upload' // 线上环境
-            default: '/admin/img_upload' // 本地测试
+            default: '/pic/upload' // 线上环境
+            // default: '/admin/img_upload' // 本地测试
         },
         multiple: {
             // 多图开关

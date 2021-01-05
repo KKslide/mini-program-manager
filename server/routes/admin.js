@@ -429,7 +429,7 @@ router.post("/articles/edit", function (req, res) {
         poster: req.query.poster || req.body.poster || "",
         composition: req.query.composition || req.body.composition || "",
         isShow: req.query.isShow || req.body.isShow || "1",
-        user: JSON.parse(req.cookies.userInfo).username||"kk"
+        user: JSON.parse(req.cookies.userInfo).username || "kk"
     }
     getTokenString(function () {
         axios({
@@ -445,6 +445,8 @@ router.post("/articles/edit", function (req, res) {
         }).then(response => {
             if (response.data.errmsg == "ok") {
                 res.json({ code: 1 })
+            } else {
+                res.json({ code: 0, msg: response.data.errmsg })
             }
         }).catch(err => {
             console.log(err);
