@@ -1,12 +1,17 @@
 <template>
     <div id="massage_list">
-        <el-table :data="tableData" stripe style="width: 100%" :cell-class-name="setCell">
+        <el-table :data="tableData" v-loading="tableLoading" stripe style="width: 100%" :cell-class-name="setCell">
             <el-table-column prop="addtime" label="日期">
                 <template slot-scope="scope">
-                    <p>{{scope.row.addtime|date}}</p>
+                    <p>{{scope.row.addtime["$numberDouble"]|numberDouble}}</p>
                 </template>
             </el-table-column>
-            <el-table-column prop="viewer" label="用户/邮箱"></el-table-column>
+            <el-table-column prop="guest_name" label="微信头像/昵称">
+                <template slot-scope="scope">
+                    <img :src="scope.row.guest_avatar" width="60px" style="border-radius:50%;margin-right:15px;">
+                    <span v-html="scope.row.guest_name"></span>
+                </template>
+            </el-table-column>
             <el-table-column prop="message" label="内容"></el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
@@ -21,8 +26,8 @@
                 <el-form-item label="时间">
                     <div v-html="fixedTime" class="chosen_content"></div>
                 </el-form-item>
-                <el-form-item label="用户/邮箱">
-                    <el-input v-model="chosen.viewer" disabled class="disabled"></el-input>
+                <el-form-item label="昵称">
+                    <el-input v-model="chosen.guest_name" disabled class="disabled"></el-input>
                 </el-form-item>
                 <el-form-item label="内容">
                     <div v-html="chosen.message" class="chosen_content"></div>
@@ -38,7 +43,7 @@
         <el-pagination
             background
             layout="prev, pager, next"
-            :page-size="5"
+            :page-size="pageSize"
             :page-count="pages"
             :total="total"
             @current-change="pageChange"
@@ -53,15 +58,17 @@ export default {
         return {
             tableData: [],
             curPage: 1,
+            pageSize:5,
             total: 1,
             pages: 1,
             dialogTableVisible: false, // 查看详情的弹窗默认不显示
             labelPosition: 'right',
             chosen: {
-                viewer: '',
+                guest_name: '',
                 addtime: '',
                 message: ''
-            }
+            },
+            tableLoading:true
         }
     },
     mounted() {
@@ -70,7 +77,7 @@ export default {
     methods: {
         handleCheck(index, row) { // 点击查看评论
             this.chosen.addtime = row.addtime;
-            this.chosen.viewer = row.viewer;
+            this.chosen.guest_name = row.guest_name;
             this.chosen.message = row.message;
             this.dialogTableVisible = true;
         },
@@ -82,15 +89,18 @@ export default {
             }).then(() => {
                 this.$axios({
                     url: "/admin/massage/del",
-                    data: { id: row.id },
+                    data: { id: row._id },
                     method: "post"
                 }).then(res => {
-                    if (res.data.code == 1) {
+                    if (res.data.code == 0) {
                         this.$message({ type: 'success', message: res.data.msg });
                     } else {
                         this.$message({ type: 'warning', message: res.data.msg });
                     }
-                }).then(_ => this.getMassageList());
+                }).then(_ => {
+                    this.tableLoading=true;
+                    this.getMassageList();
+                });
             });
         },
         setCell(row, column, rowIndex, columnIndex) { // 设置类名来更改样式
@@ -102,14 +112,18 @@ export default {
             this.$axios({
                 url: "/admin/message/get",
                 method: "get",
-                params: { pageNo: this.curPage, pageSize: 10 }
+                params: { pageNo: this.curPage, pageSize: this.pageSize }
             }).then(res => {
-                this.tableData = res.data.messages;
+                this.tableData = res.data.messages.map(v=>{
+                    return JSON.parse(v)
+                });
                 this.total = res.data.total;
                 this.pages = res.data.pages;
+                this.tableLoading=false
             })
         },
         pageChange(currentPage) {
+            this.tableLoading=true;
             this.curPage = currentPage;
             this.getMassageList();
         }
@@ -117,7 +131,8 @@ export default {
     computed: {
         fixedTime: {
             get(val) {
-                let date = new Date(val.chosen.addtime);
+                let addtime = val.chosen.addtime["$numberDouble"];
+                let date = new Date(Number(addtime));
                 return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours() >= 10 ? date.getHours() : '0' + date.getHours()}:${date.getMinutes() >= 10 ? date.getMinutes() : '0' + date.getMinutes()}:${date.getSeconds() >= 10 ? date.getSeconds() : '0' + date.getSeconds()}`
             }
         }

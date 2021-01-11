@@ -4,22 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var indexRouter = require('./routes/index');
 var adminRouter = require('./routes/admin');
 var uploadRouter = require('./routes/upload'); // 上传图片路由接口
-
-//加载mongoose数据库，这个中间件是nodejs与mongoDB数据库的桥梁
-var mongoose = require("mongoose");
-
-// 连接数据库
-// mongoose.connect(‘mongodb://username:password@host:port/database?options…’);
-mongoose.connect("mongodb://root:root@localhost:27017/myBlog");
-
-var db = mongoose.connection;
-db.once("open", function () {
-    console.log("Mongo Connected");
-});
-db.on("error", console.error.bind(console, "Mongoose Connection Error"));
 
 var app = express();
 
@@ -38,7 +24,6 @@ app.get('/', function (req, res, next) {
     res.render('index');
 });
 
-app.use('/index', indexRouter);
 app.use('/admin', adminRouter);
 app.use('/pic', uploadRouter);
 
