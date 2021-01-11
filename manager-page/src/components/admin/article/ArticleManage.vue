@@ -293,8 +293,8 @@ export default {
         targetUrl: {
             // 上传地址
             type: String,
-            default: '/pic/upload' // 线上环境
-            // default: '/admin/img_upload' // 本地测试
+            // default: '/pic/upload' // 线上环境
+            default: '/admin/img_upload' // 本地测试
         },
         multiple: {
             // 多图开关
@@ -474,8 +474,6 @@ export default {
                         })
                     }
                     if (this.dialogType == 'edit') { // 编辑文章
-                        // 需要对content内容进行字符转义, 否则会出事, 主要可能是pre标签的内容出现引号会出事
-                        this.form.composition = this.form.composition.replace(/'/g,"\\'").replace(/"/g,'\\"');
                         this.$axios({
                             url: '/admin/articles/edit',
                             method: 'post',

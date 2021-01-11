@@ -358,7 +358,7 @@ router.post('/articles/add', (req, res, next) => {
         category: req.body.category || "",
         description: req.body.description || "",
         video_src: req.body.video_src || "",
-        composition: req.body.composition || "",
+        composition: req.body.composition.replace(/"/g, "'") || "", // 文章字符串中的双引号需要转化成单引号, 否则会出事
         poster: req.body.poster || req.query.poster || "",
         isShow: req.body.isShow || req.query.isShow || "1",
         user: JSON.parse(req.cookies.userInfo).username || 'unknown',
@@ -373,7 +373,7 @@ router.post('/articles/add', (req, res, next) => {
             method: "POST",
             data: JSON.stringify({
                 env: `${wxData.env}`,
-                query: `db.collection("content").add({data:[${JSON.stringify(newcontent)}]})`,
+                query: `db.collection("content").add({data:[${JSON.stringify(newcontent).replace(/\\/g, "")}]})`
             }),
             headers: {
                 "Content-Type": "application/json"
@@ -427,8 +427,9 @@ router.post("/articles/edit", function (req, res) {
         description: req.query.description || req.body.description || "",
         video_src: req.query.video_src || req.body.video_src || "",
         poster: req.query.poster || req.body.poster || "",
-        composition: req.query.composition || req.body.composition || "",
+        composition: req.body.composition.replace(/"/g, "'") || "",
         isShow: req.query.isShow || req.body.isShow || "1",
+        edittime: new Date().getTime(),
         user: JSON.parse(req.cookies.userInfo).username || "kk"
     }
     getTokenString(function () {
@@ -437,7 +438,7 @@ router.post("/articles/edit", function (req, res) {
             method: "POST",
             data: JSON.stringify({
                 env: `${wxData.env}`,
-                query: `db.collection("content").doc('${id}').update({data:${JSON.stringify(obj)}})`,
+                query: `db.collection("content").doc('${id}').update({data:${JSON.stringify(obj).replace(/\\/g, "")}})`
             }),
             headers: {
                 "Content-Type": "application/json"
