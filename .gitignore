@@ -4,6 +4,7 @@
 /server/dist
 /server/.DS_Store
 /server/upload/*
+!.gitkeep
 
 /manager-page/node_modules
 /manager-page/dist
