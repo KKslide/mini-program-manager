@@ -46,7 +46,15 @@ router.post('/upload', function (req, res, next) {
             }
             if (respInfo.statusCode == 200) {
                 var imageSrc = imageUrl + respBody.key;
-                res.end(JSON.stringify({ status: '200', msg: '上传成功', imageUrl: imageSrc }));
+                res.end(JSON.stringify({
+                    status: '200',
+                    msg: '上传成功',
+                    imageUrl: imageSrc,
+                    errno: 0,
+                    path: imageSrc,
+                    imageUrl: imageSrc,
+                    data: [imageSrc]
+                }));
                 // console.log(respBody);
             } else {
                 res.end(JSON.stringify({ status: '-1', msg: '上传失败', error: JSON.stringify(respBody) }));

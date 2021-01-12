@@ -81,7 +81,7 @@ router.post('/login', (req, res, next) => {
                     "_id": response.data.data[0]._id,
                     "username": response.data.data[0].username,
                     "isadmin": /* response.data.data[0].isadmin */ true
-                }), { maxAge: 1000 * 60 * 60, httpOnly: true }) // 现在先存一个小时吧
+                }), { maxAge: 1000 * 60 * 60 * 6, httpOnly: true }) // 现在先存一个小时吧
                 res.json({
                     code: 1,
                     msg: "登录成功！",
@@ -471,7 +471,7 @@ router.post("/massage/del", function (req, res, next) {
             }
         }).then(response => {
             if (response.data.errmsg == "ok") {
-                res.json({ code: 0 ,msg:"删除成功!"})
+                res.json({ code: 0, msg: "删除成功!" })
             }
         }).catch(err => {
             console.log(err);
