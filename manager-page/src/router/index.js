@@ -9,6 +9,7 @@ import CategoryManageComponent from '@/components/admin/category/CategoryManage.
 import ArticleManageComponent from '@/components/admin/article/ArticleManage.vue'
 import MassageManageComponent from '@/components/admin/massage/MassageManagement.vue'
 import LoginComponent from '@/components/admin/login/Login'
+import Sort from "../components/Sort.vue"
 /* ********* 管理端 ********** */
 
 export default new VueRouter({
@@ -51,6 +52,11 @@ export default new VueRouter({
                     component: MassageManageComponent
                 },
             ]
+        },
+        {
+            path: '/sort',
+            name: 'sort',
+            component: Sort
         }
     ],
     scrollBehavior(to, from, savedPosition) {

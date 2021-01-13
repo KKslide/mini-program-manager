@@ -49,6 +49,7 @@ module.exports = {
             'axios': 'axios',
             'qs': 'qs',
             'vue-router': 'VueRouter',
+            'vuedraggable':'vuedraggable'
             // 'echarts': 'echarts',
             // 'video.js': 'videojs',
             // 'videojs-contrib-hls.js': 'videojs-contrib-hls',
