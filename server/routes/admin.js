@@ -112,7 +112,7 @@ router.get("/category", (req, res, next) => {
             url: `https://api.weixin.qq.com/tcb/databasequery?access_token=${access_token}`,
             data: {
                 env: `${wxData.env}`,
-                query: `db.collection("category").get()`
+                query: `db.collection("category").orderBy("index", 'asc').get()`
             },
             method: "POST",
             headers: {
@@ -236,7 +236,7 @@ router.get("/articles", (req, res, next) => {
             method: "POST",
             data: JSON.stringify({
                 env: `${wxData.env}`,
-                query: `db.collection("content").where({isDel:"0"}).count()`,
+                query: `db.collection("content").count()`,
             }),
             headers: {
                 "Content-Type": "application/json"
@@ -351,6 +351,7 @@ router.post("/articles/edit", function (req, res) {
         poster: req.query.poster || req.body.poster || "",
         composition: req.body.composition.replace(/"/g, "'") || "",
         isShow: req.query.isShow || req.body.isShow || "1",
+        isHot: req.query.isHot || req.body.isHot || "1",
         edittime: new Date().getTime(),
         user: JSON.parse(req.cookies.userInfo).username || "kk"
     }

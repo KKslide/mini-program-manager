@@ -33,8 +33,10 @@
                 </template>
             </el-table-column>
         </el-table>
-        <el-button type="text" @click='open'>新增分类</el-button>
-        <!-- 改用dialog组件 -->
+        <el-button type="text" @click='open' icon="el-icon-circle-plus-outline">新增分类</el-button>
+        <span> | </span>
+        <el-button type="text" icon="el-icon-s-operation">分类排序</el-button>
+        <!-- 新增或编辑dialog组件 -->
         <el-dialog :title="handleType=='add'?'添加分类':'编辑分类'" :visible.sync="dialogVisible" width="50%" :before-close="handleClose">
             <!-- <span>这是一段信息</span> -->
             <el-form :model="categoryDetail" ref="categoryDetail" label-width="120px" :rules="rules" @submit.native.prevent="">
@@ -83,6 +85,26 @@
                 <el-button type="primary" @click="commitHandle(handleType)">确 定</el-button>
             </span>
         </el-dialog>
+        <el-dialog title="分类排序" :visible.sync="sortDialogVisible" width="50%">
+            <!-- <div style="margin-top:10px">
+                <div>{{ drag ? "拖拽中" : "拖拽停止" }}</div>
+                <draggable
+                    v-model="myArray"
+                    chosenClass="chosen"
+                    forceFallback="true"
+                    group="people"
+                    animation="1000"
+                    @start="onStart"
+                    @end="onEnd"
+                >
+                    <transition-group>
+                        <div class="item" v-for="element in myArray" :key="element.id">
+                            {{ element.name }}
+                        </div>
+                    </transition-group>
+                </draggable>
+            </div> -->
+        </el-dialog>
     </div>
 </template>
 
@@ -92,6 +114,7 @@ export default {
         return {
             handleType:"add",
             dialogVisible: false,
+            sortDialogVisible: false, // 排序模态框显示
             bannerWidth:396,
             bannerHeight:88,
             file:'',
@@ -179,7 +202,7 @@ export default {
                 })
             }
         },
-        open(){
+        open(){ // 打开添加模态框
             this.dialogVisible=true;
             this.categoryDetail.name="";
             this.categoryDetail.banner="http://example.kkslide.fun/banner.jpg";
@@ -218,21 +241,6 @@ export default {
                     message: '已取消删除'
                 });
             });
-            // **************************
-            //   this.$axios({
-            //     url: '/admin/category/del',
-            //     method: 'post',
-            //     data: {
-            //       id: row._id
-            //     }
-            //   }).then(res => {
-            //     if (res.data.code == 1) {
-            //       this.$message({
-            //         type: 'success',
-            //         message: res.data.msg
-            //       });
-            //     }
-            //   })
         },
         edit(index, row) { // 编辑按钮
             this.handleType="edit";

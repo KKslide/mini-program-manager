@@ -5,6 +5,7 @@
             <el-table-column prop="id" label="文章ID"></el-table-column>
             <el-table-column prop="poster" label="缩略图">
                 <template slot-scope="scope">
+                    <!-- 148 x 96 -->
                     <el-image
                         style="width: 148px; height: 96px"
                         :src="scope.row.poster"
@@ -13,19 +14,19 @@
                 </template>
             </el-table-column>
             <el-table-column prop="title" label="文章标题"></el-table-column>
-            <el-table-column prop="category" label="文章分类"></el-table-column>
-            <el-table-column label="添加时间">
+            <el-table-column prop="category" label="文章分类" width="100px"></el-table-column>
+            <el-table-column prop="addtime" label="添加时间">
                 <template slot-scope="scope">
                     <p>{{scope.row.addtime|date}}</p>
                 </template>
             </el-table-column>
-            <el-table-column label="修改时间">
+            <el-table-column prop="edittime" label="修改时间">
                 <template slot-scope="scope">
                     <p>{{scope.row.edittime|date}}</p>
                 </template>
             </el-table-column>
-            <el-table-column prop="viewnum" label="阅读量"></el-table-column>
-            <el-table-column prop="comment" label="评论">
+            <el-table-column prop="viewnum" label="阅读量" width="100px"></el-table-column>
+            <el-table-column prop="comment" label="评论" width="100px">
                 <template slot-scope="scope">
                     <el-button
                         @click="checkComment(scope.row)"
@@ -34,9 +35,14 @@
                     >{{scope.row.comment.length}}</el-button>
                 </template>
             </el-table-column>
-            <el-table-column prop="isShow" label="是否显示">
+            <el-table-column prop="isShow" label="是否显示" width="100px">
                 <template slot-scope="scope">
                     <p>{{scope.row.isShow=="1"?"是":"否"}}</p>
+                </template>
+            </el-table-column>
+            <el-table-column prop="isHot" label="是否热文" width="100px">
+                <template slot-scope="scope">
+                    <p>{{scope.row.isHot=="1"?"是":"否"}}</p>
                 </template>
             </el-table-column>
             <el-table-column label="操作">
@@ -100,24 +106,37 @@
             direction="btt"
             custom-class="demo-drawer"
             ref="drawer"
-            size="85%"
+            size="95%"
             :modal-append-to-body="true"
         >
             <div class="demo-drawer__content" style="padding:0 15px 10px 15px;">
                 <el-form :model="form" ref="form" :rules="rules">
                     <!-- 文章标题 -->
                     <el-form-item label="文章标题" :label-width="formLabelWidth" prop="title">
-                        <el-input v-model="form.title" autocomplete="off"></el-input>
+                        <el-input v-model="form.title" autocomplete="off" placeholder="文章标题不要太长"></el-input>
                     </el-form-item>
                     <!-- 是否显示 -->
-                    <el-form-item label="是否显示" :label-width="formLabelWidth" prop="isShow">
-                        <el-switch
-                            v-model="form.isShow"
-                            active-color="#13ce66"
-                            inactive-color="#ff4949"
-                            active-value="1"
-                            inactive-value="0"
-                        ></el-switch>(绿色为开启显示,选择关闭则不会在页面中显示)
+                    <el-form-item label="显示与推送" :label-width="formLabelWidth">
+                        <el-col :span="10">
+                            <span>是否显示 </span>
+                            <el-switch
+                                v-model="form.isShow"
+                                active-color="#13ce66"
+                                inactive-color="#ff4949"
+                                active-value="1"
+                                inactive-value="0"
+                            ></el-switch>(绿色为开启显示,选择关闭则不会在页面中显示)
+                        </el-col>
+                        <el-col :span="11">
+                            <span>是否推送热文 </span>
+                            <el-switch
+                                v-model="form.isHot"
+                                active-color="#13ce66"
+                                inactive-color="#ff4949"
+                                active-value="1"
+                                inactive-value="0"
+                            ></el-switch>(绿色为推送热文,选择关闭则不会在热文中显示)
+                        </el-col>
                     </el-form-item>
                     <!-- 文章分类 -->
                     <el-form-item label="文章分类" :label-width="formLabelWidth" prop="category">
@@ -127,11 +146,11 @@
                     </el-form-item>
                     <!-- 文章简介 -->
                     <el-form-item label="文章简介" :label-width="formLabelWidth" prop="description">
-                        <el-input v-model="form.description" autocomplete="off"></el-input>
+                        <el-input v-model="form.description" autocomplete="off" placeholder="请填写简介"></el-input>
                     </el-form-item>
                     <!-- 视频链接 -->
-                    <el-form-item v-if="form.category==isVideo('Vlog')" label="视频链接" :label-width="formLabelWidth" >
-                        <el-input v-model="form.video_src" autocomplete="off"></el-input>
+                    <el-form-item label="视频链接" :label-width="formLabelWidth" >
+                        <el-input v-model="form.video_src" autocomplete="off" placeholder="请填写常规视频地址"></el-input>
                     </el-form-item>
                     <!-- 缩略图 -->
                     <el-form-item label="缩略图" :label-width="formLabelWidth" prop="poster">
@@ -274,10 +293,12 @@ export default {
                 video_src: '', // 视频地址
                 composition: '', // 文章内容
                 poster: '', // 缩略图
-                isShow:"1" // 文章是否显示  "1"-显示;"0"-不显示
+                isShow:"1", // 文章是否显示  "1"-显示;"0"-不显示
+                isHot: "1", // 文章是否推送到HOT类目  "1"-推送;"0"-不推送
             },
             isShow: "1", // 文章是否显示
-            formLabelWidth: '90px',
+            isHot: "1", // 文章是否推送热文
+            formLabelWidth: '100px',
             editor: null, // wangEditor编辑器实例
             rules: { // 校验规则
                 title: [{ required: true, message: '写一下文章标题啦', trigger: 'blur' }],
@@ -293,8 +314,8 @@ export default {
         targetUrl: {
             // 上传地址
             type: String,
-            // default: '/pic/upload' // 线上环境
-            default: '/admin/img_upload' // 本地测试
+            default: '/pic/upload' // 线上环境
+            // default: '/admin/img_upload' // 本地测试
         },
         multiple: {
             // 多图开关
@@ -381,7 +402,7 @@ export default {
                 .catch(_ => { });
         },
         setIdColumn({ row, column, rowIndex }) { // cell不换行
-            if (column.property == 'id') {
+            if (column.property == 'id' || column.property == 'title' || column.property == 'addtime' || column.property == 'edittime') {
                 return 'cell_nowrap'
             }
             else if (column.label == '操作') {
@@ -406,6 +427,7 @@ export default {
                                 edittime:v.edittime,
                                 viewnum: v.viewnum,
                                 isShow: v.isShow,
+                                isHot: v.isHot,
                                 comment: v.comment,
                                 poster:v.poster
                             })
@@ -450,6 +472,7 @@ export default {
                     }
                     if (this.dialogType == 'add') { // 添加文章
                         this.form.isShow = this.isShow;
+                        this.form.isHot = this.isHot;
                         this.$axios({
                             url: "/admin/articles/add",
                             method: "post",
