@@ -219,11 +219,45 @@ router.post('/category/edit', (req, res, next) => {
             }
         }).catch(err => {
             console.log(err);
-            console.log('***********************************');
-            console.log(err.data);
         })
     })
 });
+
+// 文章分类排序
+router.post('/category/sort', (req, res, next) => {
+    let sortedData = req.body.sortedData;
+    getTokenString(function () {
+        axios({
+            url: `https://api.weixin.qq.com/tcb/invokecloudfunction?access_token=${access_token}&env=${wxData.env}&name=updateHandler`,
+            data: JSON.stringify({
+                collection: "category_sort",
+                sortedData: sortedData
+            }),
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (response.data.errcode == 0 && response.data.errmsg == "ok") {
+                let resArr = JSON.parse(response.data.resp_data)
+                console.log(resArr);
+                console.log(resArr.filter(v => {
+                    return v["stats"]["updated"] == 1
+                }).length);
+                res.json({
+                    code: 1,
+                    msg: "顺序修改成功!",
+                    resArr: resArr
+                })
+            } else {
+                res.json({ code: 0, msg: "接口请求错误" })
+            }
+        }).catch(err => {
+            console.log(err);
+            res.json({ code: 0, msg: "接口请求错误" })
+        })
+    })
+})
 
 // 获取文章接口
 router.get("/articles", (req, res, next) => {

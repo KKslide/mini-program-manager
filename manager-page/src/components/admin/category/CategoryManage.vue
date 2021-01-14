@@ -1,11 +1,12 @@
 <template>
-    <div id="category">
+    <div id="category" v-loading.fullscreen.lock="fullscreenLoading">
         <el-table :data="categoryData" border style="width: 100%" :cell-class-name="setIdColumn">
             <el-table-column prop="_id" label="分类ID">
                 <template slot-scope="scope">
                     <p :title="scope.row._id">{{scope.row._id.slice(0,10)}}...</p>
                 </template>
             </el-table-column>
+            <el-table-column type="index" label="分类顺序" width="100px"></el-table-column>
             <el-table-column prop="name" label="分类名称"></el-table-column>
             <el-table-column prop="addtime" label="新增时间">
                 <template slot-scope="scope">
@@ -35,10 +36,9 @@
         </el-table>
         <el-button type="text" @click='open' icon="el-icon-circle-plus-outline">新增分类</el-button>
         <span> | </span>
-        <el-button type="text" icon="el-icon-s-operation">分类排序</el-button>
+        <el-button type="text" @click="sortDialogVisible=true;" icon="el-icon-s-operation">分类排序</el-button>
         <!-- 新增或编辑dialog组件 -->
         <el-dialog :title="handleType=='add'?'添加分类':'编辑分类'" :visible.sync="dialogVisible" width="50%" :before-close="handleClose">
-            <!-- <span>这是一段信息</span> -->
             <el-form :model="categoryDetail" ref="categoryDetail" label-width="120px" :rules="rules" @submit.native.prevent="">
                 <el-form-item label="分类名称" prop="name">
                     <el-input v-model="categoryDetail.name" autocomplete="off"></el-input>
@@ -85,11 +85,11 @@
                 <el-button type="primary" @click="commitHandle(handleType)">确 定</el-button>
             </span>
         </el-dialog>
-        <el-dialog title="分类排序" :visible.sync="sortDialogVisible" width="50%">
-            <!-- <div style="margin-top:10px">
-                <div>{{ drag ? "拖拽中" : "拖拽停止" }}</div>
+        <el-dialog title="分类排序" :visible.sync="sortDialogVisible" width="50%" :before-close="handleCancelSort">
+            <div class="sortDialogVisible">
+                <div>{{ drag ? "排序中" : "拖拽可排序" }}</div>
                 <draggable
-                    v-model="myArray"
+                    v-model="sortableCatetegoryData"
                     chosenClass="chosen"
                     forceFallback="true"
                     group="people"
@@ -98,17 +98,24 @@
                     @end="onEnd"
                 >
                     <transition-group>
-                        <div class="item" v-for="element in myArray" :key="element.id">
+                        <div class="item" v-for="element in sortableCatetegoryData" :key="element._id">
                             {{ element.name }}
                         </div>
                     </transition-group>
                 </draggable>
-            </div> -->
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="handleSortConfirm">确 定</el-button>
+            </span>
         </el-dialog>
     </div>
 </template>
 
 <script>
+//导入draggable组件
+import draggable from 'vuedraggable'
+import {deepClone} from '../../../utils/utils'
 export default {
     data() {
         return {
@@ -125,14 +132,21 @@ export default {
                 id: "",
                 name: "",
                 banner: "http://example.kkslide.fun/banner.jpg",
-                // addtime: "",
-                // edittime: "",
+                index:"",
+                addtime: "",
+                edittime: "",
             },
+            sortableCatetegoryData:[], // 拖拽排序分类数据
             rules:{
                 name:[{ required: true, message: '内容不能为空', trigger: 'blur' }],
                 banner:[{required:true,message:'请上传分类图banner',trigger:'blur'}]
-            }
+            },
+            drag: false, // 是否开启拖拽
+            fullscreenLoading:false, // 全屏loading
         }
+    },
+    components: {
+        draggable, // 注册draggable组件
     },
     methods: {
         getData() {
@@ -144,6 +158,7 @@ export default {
                             _id:JSON.parse(v)._id,
                             name:JSON.parse(v).name,
                             banner:JSON.parse(v).banner,
+                            index:JSON.parse(v).index,
                             addtime:
                                 typeof JSON.parse(v).addtime == "string"
                                     ? JSON.parse(v).addtime  
@@ -155,6 +170,7 @@ export default {
                         }
                     });
                     this.categoryData = response
+                    this.sortableCatetegoryData = response
                 })
         },
         commitHandle(type){ // 添加分类操作
@@ -254,12 +270,39 @@ export default {
                 return 'cell_nowrap'
             }
         },
-        handleClose(done) { // 关闭弹窗
+        handleClose(done) { // 关闭新增编辑弹窗
             this.$confirm('确认关闭？')
                 .then(_ => {
                     done();
                 })
                 .catch(_ => { });
+        },
+        handleCancelSort(done){
+            this.$confirm('确认关闭？')
+                .then(_ => {
+                    done();
+                })
+                .catch(_ => { });
+        },
+        handleSortConfirm(){
+            let sortedData = this.sortableCatetegoryData;
+            sortedData.forEach((v,i)=>{
+                v["index"] = i
+            });
+            this.fullscreenLoading=true
+            this.$axios({
+                url:"/admin/category/sort",
+                data: {"sortedData":sortedData},
+                method:"POST"
+            }).then(res=>{
+                this.categoryData = deepClone(sortedData)
+            }).catch(err => {
+                console.log(err);
+            }).finally(_ => {
+                console.log('done!!!!!');
+                this.sortDialogVisible=false
+                this.fullscreenLoading=false
+            })
         },
         mouseEnter() {//鼠标划入显示“重新上传”
             this.$refs.reupload.style.display = 'block'
@@ -285,6 +328,12 @@ export default {
                     this.$refs.failUpload.style.display = 'block'
                 }
             })
+        },
+        onStart() { // 开始拖拽事件
+            this.drag = true;
+        },
+        onEnd() { // 拖拽结束事件
+            this.drag = false;
         },
     },
     created() {
@@ -364,6 +413,21 @@ export default {
     .avatar-uploader .el-upload.el-upload--picture-card {
         width: unset !important;
         height: unset !important;
+    }
+}
+
+.sortDialogVisible{
+    /*被拖拽对象的样式*/
+    .item {
+        padding: 6px;
+        background-color: #fdfdfd;
+        border: solid 1px #eee;
+        margin-bottom: 10px;
+        cursor: move;
+    }
+    /*选中样式*/
+    .chosen {
+        border: solid 2px #3089dc !important;
     }
 }
 
