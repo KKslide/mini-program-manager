@@ -29,7 +29,7 @@ config.zone = qiniu.zone.Zone_z0; // 华东地区服务器
 router.post('/upload', function (req, res, next) {
     var form = new formidable.IncomingForm()
     form.uploadDir = "./upload";
-    form.keepExtentsions = true;
+    form.keepExtensions = true;
     form.parse(req, function (err, fields, files) {
         // var fileName = files.file.path.split(path.sep).pop();
         // var localFile = files.file.path;
