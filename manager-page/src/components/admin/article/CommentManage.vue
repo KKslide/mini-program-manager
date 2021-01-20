@@ -6,25 +6,17 @@
             style="width: 100%"
             :cell-class-name="setCell"
         >
-            <el-table-column prop="addtime" label="日期" width>
+            <el-table-column prop="com_time" label="日期" width>
                 <template slot-scope="scope">
-                    <p>{{scope.row.addtime|date}}</p>
+                    <p>{{scope.row.com_time|date}}</p>
                 </template>
             </el-table-column>
-            <el-table-column prop="guest_id" label="用户ID"></el-table-column>
-            <el-table-column prop="com_content" label="留言内容" width="400"></el-table-column>
+            <el-table-column prop="guest_id" label="微信名"></el-table-column>
+            <el-table-column prop="com_content" label="评论内容" width="400"></el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button
-                        size="small"
-                        type="normal"
-                        @click="handleCheckComment(scope.$index, scope.row)"
-                    >查看</el-button>
-                    <el-button
-                        size="small"
-                        type="danger"
-                        @click="handleDelete(scope.$index, scope.row)"
-                    >删除</el-button>
+                    <el-button size="small" type="normal" @click="handleCheckComment(scope.$index, scope.row)" >查看</el-button>
+                    <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)" >删除</el-button>
                 </template>
             </el-table-column>
             <el-dialog

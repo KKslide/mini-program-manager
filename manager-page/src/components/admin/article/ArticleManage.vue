@@ -1,38 +1,58 @@
 <template>
     <div id="article">
+        <!-- 文章搜索 -->
+        <el-form :inline="true" :model="articleSearch" class="article_search" label-width="80px" size="mini">
+            <el-form-item label="文章标题">
+                <el-input v-model="articleSearch.title" placeholder="请输入要搜索的文章标题" clearable></el-input>
+            </el-form-item>
+            <el-form-item label="文章分类">
+                <el-select v-model="articleSearch.category" placeholder="选择分类" clearable popper-class="more_padding_bottom">
+                    <el-option v-for="v in categoryData.filter(v=>{return v.name!='HOT'})" :key="v.id"  :label="v.name" :value="v.id"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="时间范围">
+                <el-date-picker
+                    v-model="articleSearch.rangeTime"
+                    type="datetimerange"
+                    value-format="timestamp"
+                    :picker-options="pickerOptions"
+                    range-separator="至"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期"
+                    clearable
+                    align="right">
+                </el-date-picker>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="searchHandler" class="el-icon-search"> 查询</el-button>
+            </el-form-item>
+        </el-form>
+        
         <!-- 文章列表 -->
-        <el-table :data="articleData" v-loading="tableLoading" border style="width: 100%" :cell-class-name="setIdColumn">
+        <el-table :data="articleData" v-loading="tableLoading" border height="600" :cell-class-name="setIdColumn">
             <el-table-column prop="id" label="文章ID"></el-table-column>
-            <el-table-column prop="poster" label="缩略图">
+            <el-table-column prop="poster" label="缩略图" width="130px">
                 <template slot-scope="scope">
                     <!-- 148 x 96 -->
-                    <el-image
-                        style="width: 148px; height: 96px"
-                        :src="scope.row.poster"
-                        fit="cover"
-                    ></el-image>
+                    <el-image style="width: 100px; height: 64px" :src="scope.row.poster" fit="cover" ></el-image>
                 </template>
             </el-table-column>
             <el-table-column prop="title" label="文章标题"></el-table-column>
             <el-table-column prop="category" label="文章分类" width="100px"></el-table-column>
-            <el-table-column prop="addtime" label="添加时间">
+            <el-table-column prop="addtime" label="添加时间" sortable>
                 <template slot-scope="scope">
                     <p>{{scope.row.addtime|date}}</p>
                 </template>
             </el-table-column>
-            <el-table-column prop="edittime" label="修改时间">
+            <el-table-column prop="edittime" label="修改时间" sortable>
                 <template slot-scope="scope">
                     <p>{{scope.row.edittime|date}}</p>
                 </template>
             </el-table-column>
-            <el-table-column prop="viewnum" label="阅读量" width="100px"></el-table-column>
+            <el-table-column prop="viewnum" label="阅读量" width="100px" sortable></el-table-column>
             <el-table-column prop="comment" label="评论" width="100px">
                 <template slot-scope="scope">
-                    <el-button
-                        @click="checkComment(scope.row)"
-                        type="text"
-                        size="normal"
-                    >{{scope.row.comment.length}}</el-button>
+                    <el-button @click="checkComment(scope.row)" type="text" size="normal" >{{scope.row.comment.length}}</el-button>
                 </template>
             </el-table-column>
             <el-table-column prop="isShow" label="是否显示" width="100px">
@@ -47,15 +67,8 @@
             </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button
-                        size="mini"
-                        @click="dialog=true; editorInit(); handleEdit(scope.$index, scope.row)"
-                    >编辑</el-button>
-                    <el-button
-                        size="mini"
-                        type="danger"
-                        @click="handleDelete(scope.$index, scope.row)"
-                    >删除</el-button>
+                    <el-button size="mini" @click="dialog=true; editorInit(); handleEdit(scope.$index, scope.row)" >编辑</el-button>
+                    <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)" >删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -73,6 +86,7 @@
         <!-- 添加文章按钮 -->
         <el-button
             type="text"
+            class="el-icon-circle-plus"
             @click="
                 dialog = true;
                 dialogType = 'add';
@@ -82,7 +96,7 @@
                 rest();
                 editorInit();
             "
-            >添加文章</el-button
+            > 添加文章</el-button
         >
 
         <el-divider class="pager_divider"></el-divider>
@@ -90,7 +104,7 @@
         <el-pagination
             background
             layout="prev, pager, next"
-            :page-size="5"
+            :page-size="pageSize"
             :page-count="pages"
             :total="total"
             @current-change="pageChange"
@@ -217,18 +231,8 @@
                                 <img width="100%" :src="dialogImageUrl" alt />
                             </el-dialog>
                             <!-- 剪裁组件弹窗 -->
-                            <el-dialog
-                                :visible.sync="cropperModel"
-                                width="800px"
-                                :before-close="beforeClose"
-                                :modal-append-to-body="true"
-                            >
-                                <Cropper
-                                    :img-file="file"
-                                    ref="vueCropper"
-                                    :fixedNumber="fixedNumber"
-                                    @upload="upload"
-                                ></Cropper>
+                            <el-dialog :visible.sync="cropperModel" width="800px" :before-close="beforeClose" :modal-append-to-body="true" >
+                                <Cropper :img-file="file" ref="vueCropper" :fixedNumber="fixedNumber" @upload="upload" ></Cropper>
                             </el-dialog>
                             <!-- 剪裁组件弹窗 -->
                             <!-- 新上的cropper组件 -->
@@ -241,7 +245,6 @@
                 </el-form>
                 <div class="demo-drawer__footer" style="margin-bottom:10px;">
                     <el-button @click="dialog = false; editorDestroy();">取 消</el-button>
-                    <!-- <el-button type="primary" @click="$refs.drawer.closeDrawer()" :loading="loading" >{{ loading ? '提交中 ...' : '确 定' }}</el-button> -->
                     <el-button type="primary" @click="submit" :loading="loading" >{{ loading ? '提交中 ...' : '确 定' }}</el-button>
                 </div>
             </div>
@@ -257,10 +260,44 @@ export default {
     data() {
         return {
             originArticleData: null, // 接口传过来的
-            articleData: [ // 转化好的文章列表格式
-            ],
+            articleData: [], // 转化好的文章列表格式
+            // 搜索功能配置-----------------------------------
+            articleSearch:{ // 文章搜索form表单
+                title:"", // 标题
+                category:"", // 分类
+                rangeTime:"", // 时间范围
+            }, 
+            pickerOptions: {
+                shortcuts: [{
+                    text: '最近一周',
+                    onClick(picker) {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+                    picker.$emit('pick', [start, end]);
+                    }
+                }, {
+                    text: '最近一个月',
+                    onClick(picker) {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                    picker.$emit('pick', [start, end]);
+                    }
+                }, {
+                    text: '最近三个月',
+                    onClick(picker) {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+                    picker.$emit('pick', [start, end]);
+                    }
+                }]
+            },
+            // 搜索功能配置-----------------------------------
             total: 1, // 总条数
             pages: 1, // 总页数
+            pageSize: 10, // 页容量(每页多少条)
             curPage: 1, // 当前页
             drawer_title: '',
             imageUrl: '', // 文章title缩略图
@@ -349,7 +386,9 @@ export default {
         CommentCom
     },
     created() {
-        this.getArticles();
+        this.getCates().then(_=>{
+            this.getArticles();
+        })
     },
     mounted() {
         if (typeof this.initUrl === 'string') {
@@ -382,8 +421,6 @@ export default {
             for (var key in this.form) {
                 this.form[key] = ''
             }
-            // 暂时先写死一个
-            this.form["poster"] = 'http://example.kkslide.fun/upload_6aa9339ff86b4ba10446744336f486ca';
         },
         handleClose(done) { //   在关闭窗口前的处理操作
             this.confirmClose(this.close, done)
@@ -409,33 +446,31 @@ export default {
                 return 'btn_flex'
             }
         },
-        getArticles() {  // 获取文章列表
-            this.getCates().then(_=>{
-                this.$axios({ url: '/admin/articles', params: { pageNo: this.curPage, pageSize: 5 }, method: 'get' })
-                    .then(res => {
-                        this.total = res.data.total; // 总共的数量
-                        this.pages = Math.ceil(this.total/5); // 总页数
-                        // 先保存原格式的文章信息
-                        this.originArticleData = res.data.data;
-                        var newContents = [];
-                        res.data.data.forEach(v => {
-                            newContents.push({
-                                id: v._id,
-                                title: v.title,
-                                category:v.category[0].name,
-                                addtime: v.addtime,
-                                edittime:v.edittime,
-                                viewnum: v.viewnum,
-                                isShow: v.isShow,
-                                isHot: v.isHot,
-                                comment: v.comment,
-                                poster:v.poster
-                            })
+        getArticles(searchObj) {  // 获取文章列表
+            this.$axios({ url: '/admin/articles', params:Object.assign(searchObj||{}, { pageNo: this.curPage, pageSize: this.pageSize }), method: 'post' })
+                .then(res => {
+                    this.total = res.data.total; // 总共的数量
+                    this.pages = Math.ceil(this.total / this.pageSize); // 总页数
+                    // 先保存原格式的文章信息
+                    this.originArticleData = res.data.data;
+                    var newContents = [];
+                    res.data.data.forEach(v => {
+                        newContents.push({
+                            id: v._id,
+                            title: v.title,
+                            category:v.category[0].name,
+                            addtime: v.addtime,
+                            edittime:v.edittime,
+                            viewnum: v.viewnum,
+                            isShow: v.isShow,
+                            isHot: v.isHot,
+                            comment: v.comment,
+                            poster:v.poster
                         })
-                        this.articleData = newContents; // 格式化后的文章信息
-                        this.tableLoading = false;
                     })
-            })
+                    this.articleData = newContents; // 格式化后的文章信息
+                    this.tableLoading = false;
+                })
         },
         checkComment(params) { // 查看评论模块
             this.commentModel = true;
@@ -575,6 +610,10 @@ export default {
                 })
             })
         },
+        searchHandler(){ // 文章搜索
+            // console.log(this.articleSearch);
+            this.getArticles(this.articleSearch)
+        },
 
         /* ********* wangEditor编辑器的配置 *********** */
         editorInit () { // wangEditor编辑器的配置
@@ -672,11 +711,6 @@ export default {
             this.cropperModel = false
         },
         /* ************* cropper截图上传 ************** */
-        isVideo(val) {
-            let temp = null;
-            this.categoryData.forEach(v => { if (v.name == val) temp = v.id; });
-            return temp;
-        }
     }
 }
 </script>
@@ -764,6 +798,6 @@ export default {
 }
 // *********************** wangEditor富文本编辑器 ************************
 #article {
-    padding: 15px;
+    padding: 30px 15px 15px 15px;
 }
 </style>

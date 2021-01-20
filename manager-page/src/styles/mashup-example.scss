@@ -160,5 +160,11 @@ div.cell>p {
     cursor: default !important;
 }
 
+.more_padding_bottom{
+    .el-select-dropdown__list{
+        padding-bottom: 24px;
+    }
+}
+
 /* 引入公共的emoji样式 */
 @import url("./emoji.css")

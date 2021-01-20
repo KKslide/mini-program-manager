@@ -260,23 +260,39 @@ router.post('/category/sort', (req, res, next) => {
 })
 
 // 获取文章接口
-router.get("/articles", (req, res, next) => {
+router.post("/articles", (req, res, next) => {
     let pageNo = req.query.pageNo || req.body.pageNo || 1,
         pageSize = req.query.pageSize || req.body.pageSize || 5,
         total = 0;
+    let searchObj = {};
+    if (req.query.title || req.body.title) {
+        searchObj.title = `db.command.in([cloud.database().RegExp({ regexp: ${req.query.title || req.body.title}, options: 'i' })])`
+    }
+    if (req.query.category || req.body.category) {
+        searchObj.category = `db.command.in([${req.query.category || req.body.category}])`
+    }
+    if (req.query.rangeTime || req.body.rangeTime) {
+        let startTime = req.query.rangeTime[0] || req.body.rangeTime[0],
+            endTime = req.query.rangeTime[1] || req.body.rangeTime[1];
+        searchObj.addtime = `db.command.and([{ addtime: db.command.gte(${startTime}) }, { addtime: db.command.lte(${endTime}) } ])`
+    }
+    console.log(searchObj);
+    console.log(`db.collection("content").where(${JSON.stringify(searchObj)}).count()`);
     getTokenString(function () {
         axios({ // 1- 先获取总数
             url: `https://api.weixin.qq.com/tcb/databasecount?access_token=${access_token}`,
             method: "POST",
             data: JSON.stringify({
                 env: `${wxData.env}`,
-                query: `db.collection("content").count()`,
+                query: `db.collection("content").where(${JSON.stringify(searchObj)}).count()`,
             }),
             headers: {
                 "Content-Type": "application/json"
             }
         }).then(res1 => { // 2- 分页查询数据
             total = res1.data.count;
+            console.log(res1.data);
+            return
             axios({
                 url: `https://api.weixin.qq.com/tcb/invokecloudfunction?access_token=${access_token}&env=${wxData.env}&name=getHandler`,
                 data: JSON.stringify({
