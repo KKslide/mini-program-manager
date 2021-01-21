@@ -263,62 +263,36 @@ router.post('/category/sort', (req, res, next) => {
 router.post("/articles", (req, res, next) => {
     let pageNo = req.query.pageNo || req.body.pageNo || 1,
         pageSize = req.query.pageSize || req.body.pageSize || 5,
-        total = 0;
-    let searchObj = {};
-    if (req.query.title || req.body.title) {
-        searchObj.title = `db.command.in([cloud.database().RegExp({ regexp: ${req.query.title || req.body.title}, options: 'i' })])`
-    }
-    if (req.query.category || req.body.category) {
-        searchObj.category = `db.command.in([${req.query.category || req.body.category}])`
-    }
-    if (req.query.rangeTime || req.body.rangeTime) {
-        let startTime = req.query.rangeTime[0] || req.body.rangeTime[0],
-            endTime = req.query.rangeTime[1] || req.body.rangeTime[1];
-        searchObj.addtime = `db.command.and([{ addtime: db.command.gte(${startTime}) }, { addtime: db.command.lte(${endTime}) } ])`
-    }
-    console.log(searchObj);
-    console.log(`db.collection("content").where(${JSON.stringify(searchObj)}).count()`);
+        _title = req.query.title || req.body.title || "", // 需要匹配的文章标题
+        _category = req.query.category || req.body.category || "", // 需要匹配的文章分类
+        _rangeTime = req.query.rangeTime || req.body.rangeTime || [] // 需要匹配的时间范围
     getTokenString(function () {
-        axios({ // 1- 先获取总数
-            url: `https://api.weixin.qq.com/tcb/databasecount?access_token=${access_token}`,
-            method: "POST",
+        axios({
+            url: `https://api.weixin.qq.com/tcb/invokecloudfunction?access_token=${access_token}&env=${wxData.env}&name=getHandler`,
             data: JSON.stringify({
-                env: `${wxData.env}`,
-                query: `db.collection("content").where(${JSON.stringify(searchObj)}).count()`,
+                collection: "content",
+                pageNo: Number(pageNo),
+                pageSize: Number(pageSize),
+                title: _title,
+                category: _category,
+                rangeTime: _rangeTime
             }),
+            method: "POST",
             headers: {
                 "Content-Type": "application/json"
             }
-        }).then(res1 => { // 2- 分页查询数据
-            total = res1.data.count;
-            console.log(res1.data);
-            return
-            axios({
-                url: `https://api.weixin.qq.com/tcb/invokecloudfunction?access_token=${access_token}&env=${wxData.env}&name=getHandler`,
-                data: JSON.stringify({
-                    collection: "content",
-                    pageNo: Number(pageNo),
-                    pageSize: Number(pageSize)
-                }),
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            }).then(response => {
-                if (response.data.errmsg == 'ok') {
-                    res.json({
-                        code: 1,
-                        data: JSON.parse(response.data.resp_data).list,
-                        total: total
-                    })
-                } else {
-                    res.json({ code: 0, msg: response.data.errmsg })
-                }
-            }).catch(err => {
-                console.log(err);
-            })
+        }).then(response => {
+            if (response.data.errmsg == 'ok') {
+                res.json({
+                    code: 1,
+                    data: JSON.parse(response.data.resp_data).list,
+                    total: JSON.parse(response.data.resp_data).total
+                })
+            } else {
+                res.json({ code: 0, msg: response.data.errmsg })
+            }
         }).catch(err => {
-            console.log('请求错误', err);
+            console.log(err);
         })
     })
 })

@@ -10,6 +10,12 @@
                     <el-option v-for="v in categoryData.filter(v=>{return v.name!='HOT'})" :key="v.id"  :label="v.name" :value="v.id"></el-option>
                 </el-select>
             </el-form-item>
+            <!-- <el-form-item label="是否显示">
+                <el-select v-model="articleSearch.isShow" placeholder="选择是否显示" clearable popper-class="more_padding_bottom">
+                    <el-option label="隐藏" value="0"></el-option>
+                    <el-option label="显示" value="1"></el-option>
+                </el-select>
+            </el-form-item> -->
             <el-form-item label="时间范围">
                 <el-date-picker
                     v-model="articleSearch.rangeTime"
@@ -266,6 +272,7 @@ export default {
                 title:"", // 标题
                 category:"", // 分类
                 rangeTime:"", // 时间范围
+                isShow: "1"
             }, 
             pickerOptions: {
                 shortcuts: [{
@@ -611,7 +618,7 @@ export default {
             })
         },
         searchHandler(){ // 文章搜索
-            // console.log(this.articleSearch);
+            this.tableLoading = true;
             this.getArticles(this.articleSearch)
         },
 
