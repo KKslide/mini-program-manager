@@ -150,7 +150,7 @@ export default {
     },
     methods: {
         getData() {
-            this.$axios({ url: '/admin/category' })
+            this.$axios({ url: '/admin/category/get',method: "post" })
                 .then(res => {
                     let response = res.data.data
                     .map((v,i)=>{

@@ -8,6 +8,8 @@ const util = require("../util/util");
 const wxData = require("../lib/wxData");
 const axios = require("axios");
 
+const categoryHandler = require("./categoryHandler")
+
 let access_token = "";
 
 /*
@@ -48,6 +50,10 @@ const getTokenString = function (callback) {
     })
 }
 
+const axiosRequest = function () {
+
+}
+
 // 检测是否登陆
 router.get('/isadmin', (req, res, next) => {
     if (JSON.stringify(req.cookies) == "{}") {
@@ -70,9 +76,6 @@ router.post('/login', (req, res, next) => {
                 query: `db.collection("users").where({username:"${username}",password:"${password}"}).get()`
             },
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            }
         }).then(response => {
             if (response.data.errcode != 0 || response.data.data.length == 0) {
                 res.json({ code: 0, msg: "用户名或密码错误！" });
@@ -93,7 +96,7 @@ router.post('/login', (req, res, next) => {
             }
         }).catch(err => {
             console.log(err);
-            res.json({ code: 1, msg: "接口调用失败,查看后台", errData: err })
+            // res.json({ code: 1, msg: "接口调用失败,查看后台", errData: err })
         })
     })
 
@@ -106,122 +109,16 @@ router.get('/logout', (req, res, next) => {
 })
 
 // 获取文章分类接口
-router.get("/category", (req, res, next) => {
-    getTokenString(function () {
-        axios({
-            url: `https://api.weixin.qq.com/tcb/databasequery?access_token=${access_token}`,
-            data: {
-                env: `${wxData.env}`,
-                query: `db.collection("category").orderBy("index", 'asc').get()`
-            },
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }).then(response => {
-            if (response.status == 200) {
-                res.json(response.data)
-            }
-        }).catch(err => {
-            console.log('接口请求错误', err);
-            res.json({
-                msg: "接口请求错误!",
-                err: err
-            })
-        })
-    })
-});
+router.post("/category/get", categoryHandler.getCateList)
 
 // 新增文章分类
-router.post("/category/add", (req, res, next) => {
-    let obj = {
-        name: req.body.name || "",
-        banner: req.body.banner || "",
-        addtime: new Date(),
-        edittime: new Date()
-    }
-    getTokenString(function () {
-        axios({
-            url: `https://api.weixin.qq.com/tcb/databaseadd?access_token=${access_token}`,
-            data: {
-                env: `${wxData.env}`,
-                query: `db.collection('category').add({data:${JSON.stringify(obj)}})`
-            },
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }).then(response => {
-            if (response.data.errmsg == 'ok') {
-                res.json({ msg: "添加成功!", code: 1 })
-            } else {
-                res.json({ msg: "添加失败- -", code: 0 })
-            }
-        }).catch(err => {
-            console.log(err);
-            console.log('*********************');
-            console.log(err.data);
-        })
-    })
-});
+router.post("/category/add", categoryHandler.addCate)
 
 // 删除文章分类
-router.post('/category/del', (req, res, next) => {
-    getTokenString(function () {
-        axios({
-            url: `https://api.weixin.qq.com/tcb/databasedelete?access_token=${access_token}`,
-            data: {
-                env: `${wxData.env}`,
-                query: `db.collection("category").where({_id:'${req.body.id}'}).remove()`
-            },
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }).then(response => {
-            if (response.data.errmsg == 'ok') {
-                res.json({ msg: "删除成功!", code: 1 })
-            } else {
-                res.json({ msg: "删除失败- -", code: 0 })
-            }
-        }).catch(err => {
-            console.log(err);
-            console.log('***********************************');
-            console.log(err.data);
-        })
-    })
-});
+router.post('/category/del', categoryHandler.delCate);
 
 // 修改文章分类
-router.post('/category/edit', (req, res, next) => {
-    let obj = {
-        name: req.body.name || "",
-        banner: req.body.banner || "",
-        edittime: new Date()
-    }
-    getTokenString(function () {
-        axios({
-            url: `https://api.weixin.qq.com/tcb/databaseupdate?access_token=${access_token}`,
-            data: {
-                env: `${wxData.env}`,
-                query: `db.collection('category').where({_id:'${req.body.id}'}).update({data:${JSON.stringify(obj)}})`
-            },
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }).then(response => {
-            if (response.data.errmsg == 'ok') {
-                res.json({ msg: "修改成功!", code: 1 })
-            } else {
-                console.log(response.data);
-                res.json({ msg: "修改失败- -", code: 0 })
-            }
-        }).catch(err => {
-            console.log(err);
-        })
-    })
-});
+router.post('/category/edit', categoryHandler.editCate);
 
 // 文章分类排序
 router.post('/category/sort', (req, res, next) => {
@@ -427,8 +324,7 @@ router.post("/img_upload", function (req, res) {
 });
 
 // 获取留言列表
-router.get("/message/get", function (req, res, next) {
-
+router.post("/message/get", function (req, res, next) {
     let pageNo = req.query.pageNo || req.body.pageNo || 1,
         pageSize = req.query.pageSize || req.body.pageSize || 5,
         dataTotal = 0;
@@ -478,7 +374,7 @@ router.get("/message/get", function (req, res, next) {
 });
 
 // 留言删除接口
-router.post("/massage/del", function (req, res, next) {
+router.post("/message/del", function (req, res, next) {
     var id = req.body.id || req.query.id || "";
     if (id == "") {
         return res.json({ code: 1, msg: "删除失败!" })
@@ -503,5 +399,31 @@ router.post("/massage/del", function (req, res, next) {
         })
     })
 });
+
+// 简历文件列表获取接口
+router.post("/resume/get", function (req, res, next) {
+    getTokenString(function () {
+        axios({
+            url: `https://api.weixin.qq.com/tcb/databasequery?access_token=${access_token}`,
+            method: "POST",
+            data: JSON.stringify({
+                env: `${wxData.env}`,
+                query: `db.collection("resume").get()`,
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (response.data.errmsg == "ok" && response.data.errcode == 0) {
+                res.json({
+                    code: 0,
+                    data: response.data.data
+                })
+            }
+        }).catch(err => {
+            console.log(err);
+        })
+    })
+})
 
 module.exports = router;

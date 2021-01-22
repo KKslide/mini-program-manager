@@ -88,7 +88,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.$axios({
-                    url: "/admin/massage/del",
+                    url: "/admin/message/del",
                     data: { id: row._id },
                     method: "post"
                 }).then(res => {
@@ -111,7 +111,7 @@ export default {
         getMassageList() {
             this.$axios({
                 url: "/admin/message/get",
-                method: "get",
+                method: "post",
                 params: { pageNo: this.curPage, pageSize: this.pageSize }
             }).then(res => {
                 this.tableData = res.data.messages.map(v=>{
