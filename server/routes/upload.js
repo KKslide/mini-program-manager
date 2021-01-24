@@ -6,10 +6,10 @@ var router = express.Router();
 
 // 引入七牛模块  
 var qiniu = require("qiniu");
-var bucket = 'kkslide'; //要上传的空间名
-var imageUrl = 'http://example.kkslide.fun/'; // 域名名称
-var accessKey = 'FqmlgBwy5Y8JLxmW7ZKtVwiKPnX_piGG1fdb52Yk';
-var secretKey = 'bo9whWlbwjd60aYQk5JzBYLOPtPmEyMx10ajEztK';
+var bucket = ''; //要上传的空间名
+var imageUrl = ''; // 域名名称
+var accessKey = ''; // 密钥1
+var secretKey = ''; // 密钥2
 var mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
 
 var options = {

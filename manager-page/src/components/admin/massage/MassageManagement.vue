@@ -120,6 +120,16 @@ export default {
                 this.total = res.data.total;
                 this.pages = res.data.pages;
                 this.tableLoading=false
+            }).catch(err=>{
+                if(err.response.status == 401){
+                    this.$notify.error({
+                        customClass:'notify_no_border',
+                        title: '提示',
+                        message: '没有登陆, 要先去登陆先',
+                        duration: 0
+                    });
+                }
+                this.tableLoading=false;
             })
         },
         pageChange(currentPage) {

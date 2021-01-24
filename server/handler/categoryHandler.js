@@ -1,7 +1,7 @@
 const fs = require("fs");
 const wxData = require("../lib/wxData");
 const axios = require("axios");
-const { getHeapStatistics } = require("v8");
+const util = require("../util/util");
 let access_token = "";
 /*
     每次读取json文件, 判断access_token字段是否存在, 并且判断record_time字段时常是否超出2小时
@@ -41,14 +41,20 @@ const getTokenString = function (callback) {
     })
 }
 
-const axiosHandler = function (type, query, collection) {
-    if (type == "invokecloudfunction") { // 调用云函数
+/**
+ * HTTP API请求函数
+ * @param {String} type apiURL参数
+ * @param {String} query 查询语句
+ * @param {String} collection 需要查询的集合 或者 云函数参数
+ * @param {Array} sortedData 排序后的分类列表数据
+ */
+const axiosHandler = function (type, query, collection, sortedData) {
+    if (type == "invokecloudfunction") { // 分类排序调用云函数
         return axios({
-            url: `https://api.weixin.qq.com/tcb/${type}?access_token=${access_token}`,
+            url: `https://api.weixin.qq.com/tcb/${type}?access_token=${access_token}&env=${wxData.env}&name=updateHandler`,
             data: {
                 collection: `${collection}`,
-                env: `${wxData.env}`,
-                query: `${query}`
+                sortedData: sortedData
             },
             method: "POST",
             headers: {
@@ -147,14 +153,9 @@ module.exports.editCate = function (req, res) {
         name: req.body.name || "",
         banner: req.body.banner || "",
         edittime: new Date()
-    }
+    };
+    let query = `db.collection('category').where({_id:'${req.body.id}'}).update({data:${JSON.stringify(obj)}})`;
     getTokenString(_ => {
-        let obj = {
-            name: req.body.name || "",
-            banner: req.body.banner || "",
-            edittime: new Date()
-        },
-            query = `db.collection('category').where({_id:'${req.body.id}'}).update({data:${JSON.stringify(obj)}})`
         axiosHandler('databaseupdate', query)
             .then(response => {
                 if (response.data.errmsg == 'ok') {
@@ -169,9 +170,34 @@ module.exports.editCate = function (req, res) {
     })
 }
 
+/**
+ * 5- 分类排序
+ */
 module.exports.sortCate = function (req, res) {
     let sortedData = req.body.sortedData;
     getTokenString(_ => {
-        axiosHandler()
+        axiosHandler('invokecloudfunction', null, 'category_sort', sortedData)
+            .then(response => {
+                console.log(response.data);
+                if (response.data.errcode == 0 && response.data.errmsg == "ok") {
+                    let resArr = JSON.parse(response.data.resp_data)
+                    console.log(resArr);
+                    console.log(resArr.filter(v => {
+                        return v["stats"]["updated"] == 1
+                    }).length);
+                    res.json({
+                        code: 1,
+                        msg: "顺序修改成功!",
+                        resArr: resArr
+                    })
+                } else {
+                    res.json({ code: 0, msg: "接口请求错误" })
+                }
+            }).catch(err => {
+                console.log(err);
+                res.json({ code: 0, msg: "接口请求错误" })
+            }).finally(_=>{
+                console.log('排序完成啊!!');
+            })
     })
 }

@@ -4,7 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var adminRouter = require('./routes/admin');
+var auth = require("./handler/auth"); // 登陆权限验证
+var adminRouter = require('./routes/admin'); // 各个模块接口
 var uploadRouter = require('./routes/upload'); // 上传图片路由接口
 
 var app = express();
@@ -23,6 +24,9 @@ app.get('/', function (req, res, next) {
     res.type('html');
     res.render('index');
 });
+
+// auth路由拦截
+app.use(auth)
 
 app.use('/admin', adminRouter);
 app.use('/pic', uploadRouter);

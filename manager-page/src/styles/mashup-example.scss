@@ -72,13 +72,13 @@ p {
 
 // 文章编辑模块 上传组件样式
 .avatar-uploader .el-upload.el-upload--picture-card {
-    width: 148px;
+    width: 120px;
     height: 96px;
     line-height: 96px;
 }
 
 .el-upload-list--picture-card .el-upload-list__item {
-    width: 148px;
+    width: 120px;
     height: 96px;
     /* line-height: 96px; */
 }
@@ -118,6 +118,9 @@ p {
 }
 /* 作品管理 下拉框的最后一个显示不完全 看着难受 */
 .workManageDialog,.contentManageDialog{
+    ul.el-select-dropdown__list{
+        padding-bottom: 12px;
+    }
     li.el-select-dropdown__item:last-child{
         margin-bottom: 10px;
     }
@@ -163,6 +166,25 @@ div.cell>p {
 .more_padding_bottom{
     .el-select-dropdown__list{
         padding-bottom: 24px;
+    }
+}
+
+/* 错误弹窗H2的边框去掉 */
+.notify_no_border{
+    h2:after,h2:before{
+        background-color: unset;
+    }
+}
+
+/* 文章管理页- 上传图片缩略图边框为描边, 图片超出1px */
+#minPicForm{
+    >.avatar-uploader{
+        .el-upload.el-upload--picture-card{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
     }
 }
 

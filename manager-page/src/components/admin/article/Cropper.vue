@@ -43,11 +43,11 @@ export default {
         original: false, // 上传图片按照原始比例渲染  (默认:false)
         canMoveBox: true, // 截图框能否拖动  (默认:true)
         autoCrop: true, // 是否默认生成截图框  (默认:false)
-        autoCropWidth: 148, // 默认生成截图框宽度  (默认:80%)
+        autoCropWidth: 120, // 默认生成截图框宽度  (默认:80%)
         autoCropHeight: 96, // 默认生成截图框高度  (默认:80%)
         fixedBox: false, // 固定截图框大小 不允许改变  (默认:false)
         fixed: true, // 是否开启截图框宽高固定比例  (默认:true)
-        fixedNumber: [1.777777777 , 1] // 截图框比例  (默认:[1:1])
+        fixedNumber: [5 , 4] // 截图框比例  (默认:[1:1])
       },
       downImg: '#'
     }

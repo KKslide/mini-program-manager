@@ -13,13 +13,13 @@
 }
 
 .avatar-uploader .el-upload.el-upload--picture-card {
-    width: 148px;
+    width: 120px;
     height: 96px;
     line-height: 96px;
 }
 
 .el-upload-list--picture-card .el-upload-list__item {
-    width: 148px;
+    width: 120px;
     height: 96px;
     /* line-height: 96px; */
 }

@@ -10,12 +10,6 @@
                     <el-option v-for="v in categoryData.filter(v=>{return v.name!='HOT'})" :key="v.id"  :label="v.name" :value="v.id"></el-option>
                 </el-select>
             </el-form-item>
-            <!-- <el-form-item label="是否显示">
-                <el-select v-model="articleSearch.isShow" placeholder="选择是否显示" clearable popper-class="more_padding_bottom">
-                    <el-option label="隐藏" value="0"></el-option>
-                    <el-option label="显示" value="1"></el-option>
-                </el-select>
-            </el-form-item> -->
             <el-form-item label="时间范围">
                 <el-date-picker
                     v-model="articleSearch.rangeTime"
@@ -39,8 +33,8 @@
             <el-table-column prop="id" label="文章ID"></el-table-column>
             <el-table-column prop="poster" label="缩略图" width="130px">
                 <template slot-scope="scope">
-                    <!-- 148 x 96 -->
-                    <el-image style="width: 100px; height: 64px" :src="scope.row.poster" fit="cover" ></el-image>
+                    <!-- 120 x 96 -->
+                    <el-image style="width: 80px; height: 64px" :src="scope.row.poster" fit="cover" ></el-image>
                 </template>
             </el-table-column>
             <el-table-column prop="title" label="文章标题"></el-table-column>
@@ -233,7 +227,7 @@
                                     :style="{width:reuploadWidth+'px',height:reuploadWidth+'px','line-height':reuploadWidth+'px','font-size':reuploadWidth/5+'px'}"
                                 >上传失败</div>
                             </el-upload>
-                            <el-dialog :visible.sync="dialogVisible" :modal-append-to-body="true">
+                            <el-dialog :visible.sync="posterDialogVisible" :modal-append-to-body="true">
                                 <img width="100%" :src="dialogImageUrl" alt />
                             </el-dialog>
                             <!-- 剪裁组件弹窗 -->
@@ -326,6 +320,7 @@ export default {
             uploadList: [], // 上传图片列表
             reupload: true, // 控制"重新上传"开关
             dialogVisible: false, // 展示弹窗开关
+            posterDialogVisible: false,
             cropperModel: false, // 剪裁组件弹窗开关
             reuploadWidth: this.height * 0.7, // 动态改变”重新上传“大小
             //   cropper配置------------------------------------------------------
@@ -373,13 +368,13 @@ export default {
         fixedNumber: {
             // 剪裁框比例设置
             default: function () {
-                return [1.5416666666666667, 1]
+                return [5, 4]
             }
         },
         width: {
             // 单图剪裁框宽度
             type: Number,
-            default: 148
+            default: 120
         },
         height: {
             // 单图剪裁框高度
@@ -491,15 +486,28 @@ export default {
         getCates() { // 获取文章分类
             var params = { serchType:'all'};
             return new Promise((resolve,reject)=>{
-                this.$axios({ url: '/admin/category',params })
+                this.$axios({ url: '/admin/category/get',params, method:"post" })
                     .then(res => {
-                        this.categoryData = res.data.data.map((v,i)=>{
+                        this.categoryData = res.data.data.filter(v=>{
+                            return JSON.parse(v).name!='HOT'
+                        }).map((v,i)=>{
                             return {
                                 name: JSON.parse(v).name,
                                 id:JSON.parse(v)._id
                             }
                         })
                         resolve()
+                    })
+                    .catch(err=>{
+                        if(err.response.status == 401){
+                            this.$notify.error({
+                                customClass:'notify_no_border',
+                                title: '提示',
+                                message: '没有登陆, 要先去登陆先',
+                                duration: 0
+                            });
+                        }
+                        this.tableLoading=false;
                     })
             })
         },
@@ -513,8 +521,8 @@ export default {
                         return
                     }
                     if (this.dialogType == 'add') { // 添加文章
-                        this.form.isShow = this.isShow;
-                        this.form.isHot = this.isHot;
+                        // this.form.isShow = this.isShow;
+                        // this.form.isHot = this.isHot;
                         this.$axios({
                             url: "/admin/articles/add",
                             method: "post",
@@ -660,7 +668,7 @@ export default {
             // console.log('aaaaa',this.dialogImageUrl);
             // console.log(this.imageUrl);
             this.dialogImageUrl = this.imageUrl
-            this.dialogVisible = true
+            this.posterDialogVisible = true
         },
         mouseEnter() { // 鼠标移入显示“重新上传”
             this.$refs.reupload.style.display = 'block'
@@ -722,7 +730,7 @@ export default {
 }
 </script>
 
-<style lang="less"scoped>
+<style lang="less" scoped>
 // 分割线样式
 .pager_divider{
     margin: 10px 0;
@@ -731,7 +739,7 @@ export default {
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    width: 148px;
+    width: 120px;
     height: 96px;
     max-height: 96px;
     display: block;
@@ -751,7 +759,7 @@ export default {
 .avatar-uploader-icon {
     font-size: 28px;
     color: #8c939d;
-    width: 148px;
+    width: 120px;
     height: 96px;
     line-height: 96px;
     text-align: center;

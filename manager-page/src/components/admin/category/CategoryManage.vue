@@ -171,6 +171,15 @@ export default {
                     });
                     this.categoryData = response
                     this.sortableCatetegoryData = response
+                }).catch(err=>{
+                    if(err.response.status == 401){
+                        this.$notify.error({
+                            customClass:'notify_no_border',
+                            title: '提示',
+                            message: '没有登陆, 要先去登陆先',
+                            duration: 0
+                        });
+                    }
                 })
         },
         commitHandle(type){ // 添加分类操作
