@@ -200,3 +200,21 @@ module.exports.editArticle = function (req, res) {
             })
     })
 }
+
+/**
+ * 5- 删除评论
+ */
+module.exports.delComment = function (req, res) {
+    let id = req.body.id || req.query.id || "";
+    let query = `db.collection("comment").doc('${id}').remove()`
+    getTokenString(_ => {
+        axiosHandler('databasedelete', query)
+            .then(response => {
+                if (response.data.errmsg == "ok") {
+                    res.json({ code: 1 })
+                }
+            }).catch(err => {
+                console.log(err);
+            })
+    })
+}

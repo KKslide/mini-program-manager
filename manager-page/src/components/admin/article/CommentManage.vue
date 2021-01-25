@@ -5,6 +5,7 @@
             border
             style="width: 100%"
             :cell-class-name="setCell"
+            v-loading="tableLoading"
         >
             <el-table-column prop="com_time" label="日期" width>
                 <template slot-scope="scope">
@@ -43,7 +44,8 @@ export default {
             innerVisible: false,
             commentDetail: '',
             curID: null, // 当前文章ID
-            curComment: [] // 当前文章的评论列表
+            curComment: [], // 当前文章的评论列表
+            tableLoading:false
         };
     },
     methods: {
@@ -53,12 +55,13 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(_ => {
+                this.tableLoading=true;
                 /* 删除评论操作 */
                 this.$axios({
                     url: '/admin/comment/del',
                     method: 'post',
                     data: {
-                        id: row.t_id
+                        id: row._id
                     }
                 }).then(res => {
                     if (res.data.code == 1) {
@@ -66,14 +69,18 @@ export default {
                             type: 'success',
                             message: "成功删除评论 !"
                         });
-                        this.getCommentList(this.curID)
-                        this.upDateArc()
+                        this.curComment = this.curComment.filter(v=>{
+                            return v._id != row._id
+                        });
+                        this.upDateArc(row)
                     } else {
                         this.$message({
                             type: 'danger',
                             message: '删除失败, 请联系程序员 !'
                         });
                     }
+                }).finally(_=>{
+                    this.tableLoading=false
                 })
             })
         },

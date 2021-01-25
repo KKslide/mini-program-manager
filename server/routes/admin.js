@@ -38,6 +38,9 @@ router.post('/articles/add', articleHandler.addArticle);
 // 删除文章接口
 router.post('/articles/del', articleHandler.delArticle);
 
+// 删除文章评论
+router.post('/comment/del', articleHandler.delComment);
+
 // 编辑文章接口
 router.post("/articles/edit", articleHandler.editArticle);
 

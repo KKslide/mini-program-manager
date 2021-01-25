@@ -2,8 +2,8 @@
 // const path = require("path")
 
 const proxyUrl = process.env.NODE_ENV === 'production'
-    ? 'http://47.112.232.140'  // 开发
-    : 'http://127.0.0.1:80' // 生产
+    ? 'http://47.112.232.140'  // 生产
+    : 'http://127.0.0.1:9999' // 开发
 
 module.exports = {
     outputDir: './dist',

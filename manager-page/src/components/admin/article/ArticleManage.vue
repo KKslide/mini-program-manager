@@ -75,7 +75,7 @@
 
         <!-- 评论列表弹窗 -->
         <el-dialog :title="'文章【'+curChosenArcData.title+'】的评论'" :visible.sync="commentModel" :modal-append-to-body="true" width="80%" center :close-on-click-modal="false">
-            <CommentCom :curChosenArcComment="curChosenArcData" :upDateArc="getArticles"></CommentCom>
+            <CommentCom :curChosenArcComment="curChosenArcData" :upDateArc="upDateComment"></CommentCom>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="commentModel = false">取 消</el-button>
                 <el-button type="primary" @click="commentModel = false">确 定</el-button>
@@ -473,6 +473,13 @@ export default {
                     this.articleData = newContents; // 格式化后的文章信息
                     this.tableLoading = false;
                 })
+        },
+        upDateComment(params) { // 更新评论数
+            console.log(params);
+            console.log(this.curChosenArcData);
+            this.curChosenArcData.comment = this.curChosenArcData.comment.filter(v=>{
+                return v._id != params._id
+            })
         },
         checkComment(params) { // 查看评论模块
             this.commentModel = true;
