@@ -130,6 +130,7 @@ export default {
                     });
                 }
                 this.tableLoading=false;
+                this.$router.push({ name: 'login' })
             })
         },
         pageChange(currentPage) {

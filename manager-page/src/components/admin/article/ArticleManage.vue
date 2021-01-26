@@ -496,11 +496,11 @@ export default {
                 this.$axios({ url: '/admin/category/get',params, method:"post" })
                     .then(res => {
                         this.categoryData = res.data.data.filter(v=>{
-                            return JSON.parse(v).name!='HOT'
+                            return v.name!='HOT'
                         }).map((v,i)=>{
                             return {
-                                name: JSON.parse(v).name,
-                                id:JSON.parse(v)._id
+                                name: v.name,
+                                id:v._id
                             }
                         })
                         resolve()
@@ -515,6 +515,7 @@ export default {
                             });
                         }
                         this.tableLoading=false;
+                        this.$router.push({ name: 'login' })
                     })
             })
         },

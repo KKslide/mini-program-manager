@@ -176,6 +176,7 @@ export default {
                             message: '没有登陆, 要先去登陆先',
                             duration: 0
                         });
+                        this.$router.push({ name: 'login' })
                     }
                 })
                 .finally( _ => {

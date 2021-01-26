@@ -14,6 +14,18 @@
             </el-table-column>
             <el-table-column prop="guest_id" label="微信名"></el-table-column>
             <el-table-column prop="com_content" label="评论内容" width="400"></el-table-column>
+            <el-table-column prop="auth_is_read" label="已读">
+                <template slot-scope="scope">
+                    <span style="color:green;" v-if="scope.row.auth_is_read==1">是</span>
+                    <span style="color:red;" v-else>否</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="auth_response" label="已回复">
+                <template slot-scope="scope">
+                    <span style="color:green;" v-if="scope.row.auth_response.length!=0">是</span>
+                    <span style="color:red;" v-else>否</span>
+                </template>
+            </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button size="small" type="normal" @click="handleCheckComment(scope.$index, scope.row)" >查看</el-button>
@@ -97,10 +109,12 @@ export default {
     props: ['curChosenArcComment', 'upDateArc'],
     mounted() {
         this.curComment = this.curChosenArcComment.comment;
+        console.log(this.curComment);
     },
     watch: {
         curChosenArcComment(nv, ov) {
             this.curComment = nv.comment;
+            console.log(this.curComment);
         }
     }
 };
