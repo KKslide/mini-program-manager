@@ -1,6 +1,6 @@
 <template>
     <div id="category" v-loading.fullscreen.lock="fullscreenLoading">
-        <el-table :data="categoryData" border style="width: 100%" :cell-class-name="setIdColumn">
+        <el-table :data="categoryData" v-loading="tablaLoading" border style="width: 100%" :cell-class-name="setIdColumn">
             <el-table-column prop="_id" label="分类ID">
                 <template slot-scope="scope">
                     <p :title="scope.row._id">{{scope.row._id.slice(0,10)}}...</p>
@@ -29,8 +29,8 @@
             </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button size="mini" @click="edit(scope.$index, scope.row)">编辑</el-button>
-                    <el-button size="mini" type="danger" @click="del(scope.$index, scope.row)">删除</el-button>
+                    <el-button size="mini" :disabled="scope.row.name=='HOT'" @click="edit(scope.$index, scope.row)">编辑</el-button>
+                    <el-button size="mini" :disabled="scope.row.name=='HOT'" type="danger" @click="del(scope.$index, scope.row)">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -142,7 +142,8 @@ export default {
                 banner:[{required:true,message:'请上传分类图banner',trigger:'blur'}]
             },
             drag: false, // 是否开启拖拽
-            fullscreenLoading:false, // 全屏loading
+            fullscreenLoading: false, // 全屏loading
+            tablaLoading:false, // 表格loading
         }
     },
     components: {
@@ -150,6 +151,7 @@ export default {
     },
     methods: {
         getData() {
+            this.tablaLoading = true;
             this.$axios({ url: '/admin/category/get',method: "post" })
                 .then(res => {
                     let response = res.data.data
@@ -171,7 +173,8 @@ export default {
                     });
                     this.categoryData = response
                     this.sortableCatetegoryData = response
-                }).catch(err=>{
+                })
+                .catch(err=>{
                     if(err.response.status == 401){
                         this.$notify.error({
                             customClass:'notify_no_border',
@@ -181,26 +184,36 @@ export default {
                         });
                     }
                 })
+                .finally( _ => {
+                    this.tablaLoading = false
+                })
         },
-        commitHandle(type){ // 添加分类操作
+        commitHandle(type){ // 添加和编辑分类操作
             if(this.categoryDetail.banner==''){
                 this.$message({ type: 'info', message: '请添加封面图banner' });
                 return false;
             }
             if(type=="add"){
+                this.fullscreenLoading=true;
                 this.$axios({
                     url:"/admin/category/add",
                     data:{
                         'name':this.categoryDetail.name,
-                        'banner':this.categoryDetail.banner
+                        'banner':this.categoryDetail.banner,
+                        'index': this.categoryData.length // 默认排序在最后一个
                     },
                     method:'post'
-                }).then(res=>{
+                })
+                .then(res=>{
                     this.getData();
                     this.dialogVisible = false;
-                });
+                })
+                .finally(_=>{
+                    this.fullscreenLoading=false;
+                })
             }
             else if(type=="edit"){
+                this.tablaLoading=true;
                 this.$axios({
                     url: "/admin/category/edit",
                     method: "post",
@@ -224,6 +237,9 @@ export default {
                 }).then(() => {
                     this.getData();
                     this.dialogVisible=false;
+                })
+                .finally(_=>{
+                    this.tablaLoading=false;
                 })
             }
         },
@@ -286,14 +302,14 @@ export default {
                 })
                 .catch(_ => { });
         },
-        handleCancelSort(done){
+        handleCancelSort(done){ // 取消排序操作
             this.$confirm('确认关闭？')
                 .then(_ => {
                     done();
                 })
                 .catch(_ => { });
         },
-        handleSortConfirm(){
+        handleSortConfirm(){ // 确定排序操作
             let sortedData = this.sortableCatetegoryData;
             sortedData.forEach((v,i)=>{
                 v["index"] = i

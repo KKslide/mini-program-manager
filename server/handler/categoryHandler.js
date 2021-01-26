@@ -104,6 +104,7 @@ module.exports.addCate = function (req, res) {
     let obj = {
         name: req.body.name || "",
         banner: req.body.banner || "",
+        index:req.body.index || 0,
         addtime: new Date(),
         edittime: new Date()
     }
