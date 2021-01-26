@@ -80,20 +80,48 @@ const axiosHandler = function (type, query, collection, sortedData) {
  * 1- 获取分类列表
  */
 module.exports.getCateList = function (req, res) {
-    let query = `db.collection("category").orderBy("index", 'asc').get()`
     getTokenString(function () {
-        axiosHandler('databasequery', query)
+        axios({
+            url: `https://api.weixin.qq.com/tcb/invokecloudfunction?access_token=${access_token}&env=${wxData.env}&name=getHandler`,
+            data: {
+                collection: "category",
+                // name: "HOT",
+                // banner: "http://example.kkslide.fun/banner.jpg",
+                // addtime: new Date(),
+                // edittime: event.edittime || new Date(),
+                // index: event.index || 0
+            },
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
             .then(response => {
-                if (response.status == 200) {
-                    res.json(response.data)
+                if (response.data.errmsg == 'ok' && response.data.errcode == 0) {
+                    res.json(JSON.parse(response.data.resp_data))
                 }
-            }).catch(err => {
+            })
+            .catch(err => {
                 console.log('接口请求错误', err);
                 res.json({
                     msg: "接口请求错误!",
                     err: err
                 })
             })
+        // let query = `db.collection("category").orderBy("index", 'asc').get()`
+        // axiosHandler('databasequery', query)
+        //     .then(response => {
+        //         if (response.status == 200) {
+        //             res.json(response.data)
+        //         }
+        //     })
+        //     .catch(err => {
+        //         console.log('接口请求错误', err);
+        //         res.json({
+        //             msg: "接口请求错误!",
+        //             err: err
+        //         })
+        //     })
     })
 }
 
@@ -104,7 +132,7 @@ module.exports.addCate = function (req, res) {
     let obj = {
         name: req.body.name || "",
         banner: req.body.banner || "",
-        index:req.body.index || 0,
+        index: req.body.index || 0,
         addtime: new Date(),
         edittime: new Date()
     }
@@ -197,7 +225,7 @@ module.exports.sortCate = function (req, res) {
             }).catch(err => {
                 console.log(err);
                 res.json({ code: 0, msg: "接口请求错误" })
-            }).finally(_=>{
+            }).finally(_ => {
                 console.log('排序完成啊!!');
             })
     })

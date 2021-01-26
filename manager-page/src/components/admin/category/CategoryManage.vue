@@ -157,18 +157,12 @@ export default {
                     let response = res.data.data
                     .map((v,i)=>{
                         return {
-                            _id:JSON.parse(v)._id,
-                            name:JSON.parse(v).name,
-                            banner:JSON.parse(v).banner,
-                            index:JSON.parse(v).index,
-                            addtime:
-                                typeof JSON.parse(v).addtime == "string"
-                                    ? JSON.parse(v).addtime  
-                                    : new Date(JSON.parse(v).addtime.$date),
-                            edittime:
-                                typeof JSON.parse(v).edittime == "string"
-                                        ? JSON.parse(v).edittime  
-                                        : new Date(JSON.parse(v).edittime.$date),
+                            _id:v._id,
+                            name:v.name,
+                            banner:v.banner,
+                            index:v.index,
+                            addtime: v.addtime ,
+                            edittime: v.edittime
                         }
                     });
                     this.categoryData = response
