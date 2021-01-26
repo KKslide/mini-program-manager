@@ -1,64 +1,76 @@
 # 微信小程序后台管理系统
 
-基于`Vue2.6`、`Express` 和 `微信小程序云开发 HTTP API` 的简易前后端分离管理系统。   
+#### 基于`Vue2.6`、`Express` 和 `微信小程序云开发 HTTP API` 的简易前后端分离管理系统。 
+#### 另外,小程序前端github地址: [https://github.com/KKslide/mini-program-cloud.git](https://github.com/KKslide/mini-program-cloud.git)
 
-## 主要功能：
+## 此管理系统主要功能：
 - 微信小程序分类的增删改查
 - 微信小程序文章的增删改查
-- 微信小程序用户留言统计
+- 微信小程序用户留言管理
 - 管理后台支持访图片裁切上传, 拖拽排序
+- 集成WangEditor富文本编辑器
 - 更多后续功能慢慢研究😁
 
-<!-- ## 截图：
+## 截图：
 <div>    
-<img src="./screenshot/snipaste_20200501_172623.jpg" height="200" style="margin-right:10px"/>
-<img src="./screenshot/snipaste_20200501_172650.jpg" height="200"/>
-</div> 
-
+<img src="http://example.kkslide.fun/readme-pic-1.png" height="200"/>
+</div>
 <div>    
-<img src="./screenshot/snipaste_20200501_172731.jpg" height="200"/>
+<img src="http://example.kkslide.fun/readme-pic-2.jpg" height="200"/>
 </div>  
 <div>
-<img src="./screenshot/snipaste_20200501_172836.jpg" height="200"/>
+<img src="http://example.kkslide.fun/readme-pic-3.png" height="200"/>
 </div>
 <div>
-<img src="./screenshot/snipaste_20200501_173753.jpg" height="200"/>
-</div> -->
+<img src="http://example.kkslide.fun/readme-pic-4.png" height="200"/>
+</div>
 
 ********
 
-## 环境：
+## 环境和准备：
 - Nodejs v10.0+
-- Vue v2.5+
-- 微信小程序云开发环境(主要是access_token获取和云函数调用)
+- Vue v2.6+
+- 微信小程序云开发环境(主要是AccessToken凭证获取和云函数调用)
+    - 可参考: [3小时零基础入门微信小程序云开发](https://www.bilibili.com/video/BV1pE411C7Ca)
+- 在微信开发工具-云开发控制台-数据库 中建立以下几个集合:
+    - **user** (用户表)
+        - username
+        - password
+    - **category** (分类表)
+    - **content** (文章内容表)
+    - **comment** (文章评论表)
+    - **message** (留言表)
 
 
-### 服务端:
+## 服务端(NodeJS):
 + 目录结构:
 
-     ```
-        /server
-        ├─app.js
-        ├─package-lock.json
-        ├─package.json
-        ├─util
-        |  └util.js
-        ├─upload
-        ├─routes
-        |   ├─admin.js
-        |   └upload.js
-        ├─lib
-        |  ├─access_token.json
-        |  └wxData.js
-        ├─handler
-        |    ├─accessHandler.js
-        |    ├─articleHandler.js
-        |    ├─auth.js
-        |    ├─categoryHandler.js
-        |    └msgHandler.js
-        ├─bin
-        |  └www
-    ```
+    <details>
+        <summary><mark><font color=darkred>- 查看 -</font></mark></summary>
+        <pre><code>
+            /server
+            ├─app.js
+            ├─package-lock.json
+            ├─package.json
+            ├─util
+            |  └util.js
+            ├─upload
+            ├─routes
+            |   ├─admin.js
+            |   └upload.js
+            ├─lib
+            |  ├─access_token.json
+            |  └wxData.js
+            ├─handler
+            |    ├─accessHandler.js
+            |    ├─articleHandler.js
+            |    ├─auth.js
+            |    ├─categoryHandler.js
+            |    └msgHandler.js
+            ├─bin
+            |  └www
+        </code></pre>
+    </details>
 
 + 关键文件修改说明:
     + 端口修改
@@ -66,7 +78,7 @@
         // bin/www下 修改它
         var port = normalizePort(process.env.PORT || '你想要的端口');
     ```
-    + 小程序appID和密钥、云开发环境ID
+    + 小程序appID和密钥、云开发环境ID, 这些都需要自己去申请
     ```javascript
         // 修改 /lib/wxData.js 
         module.exports = {
@@ -75,14 +87,31 @@
             "env": "你的云开发环境"
         }
     ```
-    + 注意❗
-    <div style="font-weight:bold">
-    <p>因为我使用的是七牛云对象存储, 并非微信云开发存储, </p>
-    <p>若仅是学习或参考而不需要<span style="color:red">部署到云服务器</span>的话,</p>
-    <p>前端的图片上传接口调用 '/admin/img_upload' 就可以了</p>
-    </div>
+    + AccessToken存储逻辑:
+        + 读取 access_token.json 文件, 
+        + 判断 access_token 字段是否存在, 
+        + 并且判断 record_time 字段时常是否超出2小时
+        + -> 未超出: 使用它
+        + -> 超出: 重新请求并存储
+        + 👉 [官方文档: auth.getAccessToken](https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/access-token/auth.getAccessToken.html)
 
-+ 启动服务:
+    + 图片上传需要注意❗❗❗
+        <div style="font-weight:bold">
+        <p>因为该项目使用的是七牛云对象存储, 并非微信云开发存储, </p>
+        <p>七牛云对象存储需要有域名备案</p>
+        <p>若仅是学习或参考而不需要<span style="color:red">部署到云服务器</span>的话,</p>
+        <p>前端的图片上传接口调用 '/admin/img_upload' 就可以了</p>
+        <p>
+            Nodejs集成七牛云可以参考这篇文章:
+            <a href="https://www.jianshu.com/p/7b8bf616222f">Nodejs集成七牛云</a>
+        </p>
+        <p>
+            七牛云官方开发文档: 
+            <a href="https://developer.qiniu.com/kodo/1289/nodejs">对象存储 Node.js SDK</a>
+        </p>
+        </div>
+
++ 启动后端服务:
     ```shell 
     1.下载依赖包
         npm i 
@@ -90,56 +119,59 @@
         npm start
     ```
 
-### 前端：
+## 前端(Vue.js 2.6.10)：
 + 目录结构
+    <details>
+        <summary><mark><font color=darkred>- 查看 -</font></mark></summary>
+        <pre><code>
+            manager-page
+            ├─.browserslistrc
+            ├─.eslintrc.js
+            ├─.gitignore
+            ├─babel.config.js
+            ├─package-lock.json
+            ├─package.json
+            ├─vue.config.js
+            ├─src
+            |  ├─App.vue
+            |  ├─main.js
+            |  ├─utils
+            |  |   └utils.js
+            |  ├─styles
+            |  ├─router
+            |  |   ├─index.js
+            |  |   └routerGuard.js
+            |  ├─filter
+            |  |   └index.js
+            |  ├─components
+            |  |     ├─admin
+            |  |     |   ├─index.vue
+            |  |     |   ├─user
+            |  |     |   |  └UserManage.vue
+            |  |     |   ├─resume
+            |  |     |   |   └ResumeManagement.vue
+            |  |     |   ├─public
+            |  |     |   |   ├─Footer.vue
+            |  |     |   |   └NavMenu.vue
+            |  |     |   ├─massage
+            |  |     |   |    └MassageManagement.vue
+            |  |     |   ├─login
+            |  |     |   |   └Login.vue
+            |  |     |   ├─home
+            |  |     |   |  └Home.vue
+            |  |     |   ├─category
+            |  |     |   |    └CategoryManage.vue
+            |  |     |   ├─article
+            |  |     |   |    ├─ArticleManage.vue
+            |  |     |   |    ├─CommentManage.vue
+            |  |     |   |    └Cropper.vue
+            |  ├─assets
+            ├─public
+        </code></pre>
+    </details>
 
-    ```
-        manager-page
-        ├─.browserslistrc
-        ├─.eslintrc.js
-        ├─.gitignore
-        ├─babel.config.js
-        ├─package-lock.json
-        ├─package.json
-        ├─vue.config.js
-        ├─src
-        |  ├─App.vue
-        |  ├─main.js
-        |  ├─utils
-        |  |   └utils.js
-        |  ├─styles
-        |  ├─router
-        |  |   ├─index.js
-        |  |   └routerGuard.js
-        |  ├─filter
-        |  |   └index.js
-        |  ├─components
-        |  |     ├─admin
-        |  |     |   ├─index.vue
-        |  |     |   ├─user
-        |  |     |   |  └UserManage.vue
-        |  |     |   ├─resume
-        |  |     |   |   └ResumeManagement.vue
-        |  |     |   ├─public
-        |  |     |   |   ├─Footer.vue
-        |  |     |   |   └NavMenu.vue
-        |  |     |   ├─massage
-        |  |     |   |    └MassageManagement.vue
-        |  |     |   ├─login
-        |  |     |   |   └Login.vue
-        |  |     |   ├─home
-        |  |     |   |  └Home.vue
-        |  |     |   ├─category
-        |  |     |   |    └CategoryManage.vue
-        |  |     |   ├─article
-        |  |     |   |    ├─ArticleManage.vue
-        |  |     |   |    ├─CommentManage.vue
-        |  |     |   |    └Cropper.vue
-        |  ├─assets
-        ├─public
-    ```
 + 说明:
-    + 使用Vue-cli3 + Vue2.6.10开发, 以下库均是使用外部链接方式引入, 这样可以使得打包后的app.js体积更小加载更快:
+    + 使用Vue-cli4 + Vue2.6.10开发, 以下库均是使用外部链接方式引入, 这样可以使得打包后的app.js体积更小加载更快:
         - Vue
         - vue-router
         - axios
@@ -165,6 +197,7 @@
         Vue.config.js配置如下: 
             configureWebpack: {
                 // 把原本需要写在webpack.config.js中的配置代码 写在这里 会自动合并
+                // 在main.js中无需use 也能正常使用
                 externals: {
                     'axios': 'axios',
                     'vue': 'Vue',
@@ -178,10 +211,34 @@
         ```
     + 开发端口修改和axios代理配置
         ```javascript
-        // 修改vue.config.js下
+        // vue.config.js 代理端口修改成和服务端端口号一致
         const proxyUrl = process.env.NODE_ENV === 'production'
-            ? 'http://47.112.232.140:9999'  // 生产
+            ? 'http://47.112.232.140:9999'  // 生产(如果不需要部署到自己服务器,就忽略它)
             : 'http://127.0.0.1:9999' // 开发
+        // vue.config.js代理配置
+        module.exports = {
+            devServer: {
+                // 代理配置
+                proxy: {
+                    '/index': {
+                        changeOrigin: true,
+                        target: proxyUrl
+                    },
+                    '/index/*': {
+                        changeOrigin: true,
+                        target: proxyUrl
+                    },
+                    '/admin/*': {
+                        changeOrigin: true,
+                        target: proxyUrl
+                    },
+                    '/pic/*': {
+                        changeOrigin: true,
+                        target: proxyUrl
+                    }
+                }
+            }
+        }
         ```
 + 前端启动
     ```shell
@@ -191,13 +248,10 @@
             npm run serve
     ```
 
++ 打开👉[http://localhost:8080] 启动后台管理页
++ 注意: 目前是死密码,加密方式为 md5(账号+密码), 后期将尝试改为微信扫码二维码的方式登陆
 ****
 
-<!-- - 在`/`根目录下 `npm run dev` 运行开发环境
-- 在`/server`目录下 `npm start` 运行服务端
-- 打开👉[http://localhost:8080](http://localhost:8080)即可
-
-***
 ## 总结：
 虽然博客和个人网站这种类型的项目已经一搜一大把了
 
@@ -205,14 +259,14 @@
 
 从写静态页面到用Vue框架改造
 
-再自己用express写服务端
+再自己用Nodejs写服务端
 
-买服务器, 备案域名, 实现七牛云对象存储, 搭建CentOS环境, 再部署项目
+准备服务器, 备案域名, 实现七牛云对象存储, 搭建CentOS环境, 再部署项目
 
 表面上内容和功能虽然简单,但也感觉获益颇丰了
 
-下一步打算尝试用别的后台语言技术实现服务端😁
+想想出道至今都还很少有接触过微信相关的项目 有点吃亏呀😁
 
-🙏🙏🙏 -->
+🙏🙏🙏 
 
 
