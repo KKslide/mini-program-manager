@@ -17,6 +17,17 @@
             <el-menu-item index="massage">留言管理</el-menu-item>
         </el-menu>
         <div class="admin_tip">
+            <el-dropdown>
+                <span class="el-dropdown-link">
+                    <i class="el-icon-bell el-icon--left"></i>
+                    <span style="color:red;">99+</span>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>评论消息</el-dropdown-item>
+                    <el-dropdown-item>留言消息</el-dropdown-item>
+                    <el-dropdown-item>全部已读</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
             <span class="el-dropdown-link" @click="logout">
                 退出登陆
                 <i class="el-icon-thumb"></i>
@@ -68,6 +79,9 @@ export default {
         top: 50%;
         transform: translateY(-50%);
         right: 10px;
+        span.el-dropdown-link{
+            margin-left: 20px;
+        }
     }
 }
 .el-dropdown-link {

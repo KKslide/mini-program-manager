@@ -6,7 +6,7 @@ import router from './router'
 import './styles/main.moudle.scss' // 引入自己的样式
 
 import Filter from "./filter/index"
-Vue.use(Filter) // 使用路由守卫
+Vue.use(Filter) // 使用过滤器
 
 const service = axios.create({
     baseURL: process.env.NODE_ENV === 'development'
@@ -18,7 +18,7 @@ const service = axios.create({
 window.$timer = null
 
 import routerGuard from './router/routerGuard'
-router.beforeEach(routerGuard)
+router.beforeEach(routerGuard) // 使用路由守卫
 
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UFT-8'
 service.interceptors.request.use( // 把默认的object类型请求转化为post

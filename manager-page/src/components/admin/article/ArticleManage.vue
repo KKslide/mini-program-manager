@@ -77,8 +77,8 @@
         <el-dialog :title="'文章【'+curChosenArcData.title+'】的评论'" :visible.sync="commentModel" :modal-append-to-body="true" width="80%" center :close-on-click-modal="false">
             <CommentCom :curChosenArcComment="curChosenArcData" :upDateArc="upDateComment"></CommentCom>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="commentModel = false">取 消</el-button>
-                <el-button type="primary" @click="commentModel = false">确 定</el-button>
+                <el-button @click="commentModel = false">关 闭</el-button>
+                <el-button type="primary" @click="msgCheckHandler">确 定</el-button>
             </span>
         </el-dialog>
         <!-- 评论列表弹窗 -->
@@ -475,8 +475,8 @@ export default {
                 })
         },
         upDateComment(params) { // 更新评论数
-            console.log(params);
-            console.log(this.curChosenArcData);
+            // console.log(params);
+            // console.log(this.curChosenArcData);
             this.curChosenArcData.comment = this.curChosenArcData.comment.filter(v=>{
                 return v._id != params._id
             })
@@ -637,6 +637,13 @@ export default {
             this.tableLoading = true;
             this.getArticles(this.articleSearch)
         },
+
+        /* ********* 更新评论已读状态 *********** */
+        msgCheckHandler(){
+            // console.log(this.curChosenArcData)
+            // console.log(this.curChosenArcData.comment);
+        },
+        /* ********* 更新评论已读状态 *********** */
 
         /* ********* wangEditor编辑器的配置 *********** */
         editorInit () { // wangEditor编辑器的配置

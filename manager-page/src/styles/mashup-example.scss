@@ -169,6 +169,24 @@ div.cell>p {
     }
 }
 
+/* 评论回复的样式 */
+#comment_detail{
+    .comment_detail{
+        margin-bottom: 10px;
+        .chosen_content {
+            border: 1px solid #e4e7ed;
+            background-color: #f5f7fa;
+            border-radius: 4px;
+            padding: 0 15px;
+        }
+    }
+    .comment_reply{
+        .el-form-item__content{
+            display: flex;
+        }
+    }
+}
+
 /* 错误弹窗H2的边框去掉 */
 .notify_no_border{
     h2:after,h2:before{

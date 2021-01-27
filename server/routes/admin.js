@@ -7,13 +7,18 @@ const categoryHandler = require("../handler/categoryHandler");
 const articleHandler = require("../handler/articleHandler");
 const msgHandler = require("../handler/msgHandler");
 const accessHandler = require("../handler/accessHandler");
+const commentHandler = require("../handler/commentHandler");
 
+/* ************ 登陆 ************* */
 // 登陆接口
 router.post('/login', accessHandler.login);
 
 // 退出登陆接口
 router.get('/logout', accessHandler.logout);
+/* ************ 登陆 ************* */
 
+
+/* ************ 分类 ************* */
 // 获取文章分类接口
 router.post("/category/get", categoryHandler.getCateList)
 
@@ -28,7 +33,10 @@ router.post('/category/edit', categoryHandler.editCate);
 
 // 文章分类排序
 router.post('/category/sort', categoryHandler.sortCate);
+/* ************ 分类 ************* */
 
+
+/* ************ 文章 ************* */
 // 获取文章接口
 router.post("/articles", articleHandler.getArticle);
 
@@ -43,12 +51,23 @@ router.post('/comment/del', articleHandler.delComment);
 
 // 编辑文章接口
 router.post("/articles/edit", articleHandler.editArticle);
+/* ************ 文章 ************* */
 
+
+/* ************ 留言 ************* */
 // 获取留言列表
 router.post("/message/get", msgHandler.getMSG);
 
 // 留言删除接口
 router.post("/message/del", msgHandler.delMSG);
+/* ************ 留言 ************* */
+
+
+/* ************ 评论 ************* */
+router.post("/comment/read", commentHandler.readComment)
+
+router.post("/comment/reply", commentHandler.replyComment)
+/* ************ 评论 ************* */
 
 // 图片上传接口(本地调试)
 router.post("/img_upload", function (req, res) {
