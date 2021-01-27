@@ -163,13 +163,16 @@ export default {
             })
             // console.log('------------------');
             // console.log('currentComment:' , currentComment);
-            // console.log(this.curComment)
+            console.log(this.curChosenArcComment)
+            return
             this.$axios({
                 url:"/admin/comment/reply",
                 method:"post",
                 data:{
-                    id: this.commentID,
-                    authResponse: currentComment["auth_response"]
+                    openid: currentComment.openid, // 用户openid
+                    content_id:currentComment.content_id, // 文章id
+                    id: this.commentID, // 评论id
+                    authResponse: currentComment["auth_response"] // 评论内容
                 }
             }).then(res => {
                 if(res.data.code == 1){

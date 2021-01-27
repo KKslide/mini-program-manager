@@ -104,6 +104,9 @@ module.exports.readComment = function (req, res) {
  * 2- 更新评论回复内容
  */
 module.exports.replyComment = function (req, res) {
+    let openid = req.body.openid || req.query.openid;
+    console.log(openid);
+    let content_id = req.body.content_id || req.query.content_id;
     let id = req.body.id || req.query.id;
     let curAuthResponse = req.body.authResponse || req.query.authResponse || [];
     // console.log(curAuthResponse);
@@ -118,13 +121,55 @@ module.exports.replyComment = function (req, res) {
             .then(response => {
                 // console.log(response.data);
                 if (response.data.errcode == 0 && response.data.errmsg == 'ok' && response.data.modified == 1) {
-                    res.json({ code: 1 })
+                    // res.json({ code: 1 })
+                    return response
                 } else {
                     res.json({ code: 0, msg: response.data.errmsg })
                 }
+            })
+            .then(_ => {
+                /**
+                 * 推送回复订阅消息
+                 */
+                axios({
+                    url: `https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${access_token}`,
+                    method: "post",
+                    data: {
+                        "touser": `${openid}`,
+                        "template_id": "U7isDoq7uSGJ4f59-zEL5nYwUgofPQ_n2xR_ZL1JA_s",
+                        "page": `/pages/public/content/content?contentID=${content_id}`,
+                        "miniprogram_state": "developer",
+                        "lang": "zh_CN",
+                        "data": {
+                            "thing1": { // 文章标题
+                                "value": "title"
+                            },
+                            "thing2": { // 评论内容
+                                "value": `"${curAuthResponse}"`
+                            },
+                            "thing3": { // 回复内容
+                                "value": "hahahaha"
+                            },
+                            "time4": { // 回复时间
+                                "value": "2021-01-28"
+                            }
+                        }
+                    }
+                }).then(subscribeRes => {
+                    console.log(subscribeRes.data);
+                }).catch(subscribeErr => {
+                    console.log(subscribeErr);
+                })
             })
             .catch(err => {
                 console.log(err);
             })
     })
+}
+
+/**
+ * 3- 给小程序推送回复订阅消息
+ */
+module.exports.sendCommentResponse = function (req, res) {
+
 }
