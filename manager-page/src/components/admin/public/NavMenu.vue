@@ -29,8 +29,8 @@
                 </el-dropdown-menu>
             </el-dropdown>
             <span class="el-dropdown-link" @click="logout">
-                退出登陆
                 <i class="el-icon-thumb"></i>
+                退出登陆
             </span>
         </div>
     </div>

@@ -60,6 +60,12 @@ router.post("/message/get", msgHandler.getMSG);
 
 // 留言删除接口
 router.post("/message/del", msgHandler.delMSG);
+
+// 留言读取
+router.post("/message/read",msgHandler.readMSG);
+
+// 留言回复并发送订阅消息
+router.post("/message/reply", msgHandler.replyMSG);
 /* ************ 留言 ************* */
 
 

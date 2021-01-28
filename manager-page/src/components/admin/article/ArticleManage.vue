@@ -80,10 +80,10 @@
         <!-- 评论列表弹窗 -->
         <el-dialog :title="'文章【'+curChosenArcData.title+'】的评论'" :visible.sync="commentModel" :modal-append-to-body="true" width="80%" center :close-on-click-modal="false">
             <CommentCom :curChosenArcComment="curChosenArcData" :upDateArc="upDateComment"></CommentCom>
-            <span slot="footer" class="dialog-footer">
+            <!-- <span slot="footer" class="dialog-footer">
                 <el-button @click="commentModel = false">关 闭</el-button>
                 <el-button type="primary" @click="msgCheckHandler">确 定</el-button>
-            </span>
+            </span> -->
         </el-dialog>
         <!-- 评论列表弹窗 -->
 
