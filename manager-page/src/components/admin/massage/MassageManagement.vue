@@ -21,7 +21,7 @@
             </el-table-column>
         </el-table>
         <!-- 弹窗组件 -->
-        <el-dialog title="留言详情" :visible.sync="dialogTableVisible">
+        <el-dialog title="留言详情" :visible.sync="dialogTableVisible" :close-on-click-modal="false">
             <el-form :label-position="labelPosition" label-width="100px">
                 <el-form-item label="时间">
                     <div v-html="fixedTime" class="chosen_content"></div>

@@ -206,5 +206,26 @@ div.cell>p {
     }
 }
 
+/* 文章管理页中的查看评论按钮, 如果有新的评论, 则显示出来, new文字样式 */
+.hasNew{
+    display: inline-block;
+    transform: translate(3px,-10px);
+    font-size: 15px;
+    color:red;
+    animation: newsBlink 1.5s infinite;
+    cursor: default;
+}
+@keyframes newsBlink{
+    0%{
+        opacity: .4;
+    }
+    50%{
+        opacity: 1;
+    }
+    100%{
+        opacity: .3;
+    }
+}
+
 /* 引入公共的emoji样式 */
 @import url("./emoji.css")

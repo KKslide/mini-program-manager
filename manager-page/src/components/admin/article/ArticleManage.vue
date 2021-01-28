@@ -51,8 +51,12 @@
             </el-table-column>
             <el-table-column prop="viewnum" label="阅读量" width="100px" sortable></el-table-column>
             <el-table-column prop="comment" label="评论" width="100px">
+                <!--  :class="scope.row.comment.filter(v=>{return v.auth_is_read==0}).length>0?'hasNew':''" -->
                 <template slot-scope="scope">
-                    <el-button @click="checkComment(scope.row)" type="text" size="normal" >{{scope.row.comment.length}}</el-button>
+                    <el-button @click="checkComment(scope.row)" type="text" size="normal" >
+                        {{scope.row.comment.length}}
+                    </el-button>
+                    <span class="hasNew" v-if="scope.row.comment.filter(v=>{return v.auth_is_read==0}).length>0">new</span>
                 </template>
             </el-table-column>
             <el-table-column prop="isShow" label="是否显示" width="100px">

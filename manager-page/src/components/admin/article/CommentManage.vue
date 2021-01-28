@@ -163,20 +163,25 @@ export default {
             })
             // console.log('------------------');
             // console.log('currentComment:' , currentComment);
-            console.log(this.curChosenArcComment)
-            return
+            // console.log(this.curChosenArcComment)
+            // return
             this.$axios({
                 url:"/admin/comment/reply",
                 method:"post",
                 data:{
+                    id: this.commentID, // 评论id
                     openid: currentComment.openid, // 用户openid
                     content_id:currentComment.content_id, // 文章id
-                    id: this.commentID, // 评论id
-                    authResponse: currentComment["auth_response"] // 评论内容
+                    content_title: this.curChosenArcComment.title, // 文章标题
+                    com_content: currentComment.com_content, // 用户评论内容
+                    authResponse: currentComment["auth_response"] // 回复内容
                 }
             }).then(res => {
+                console.log(res);
                 if(res.data.code == 1){
                     this.$message({ type: 'success', message: "回复成功! 对方将收到你的回复信息" });
+                }else{
+                    this.$message({ type: 'warning', message: res.data.errMsg });
                 }
             }).finally(_=>{
                 this.responseText = ""

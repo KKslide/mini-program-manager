@@ -104,11 +104,13 @@ module.exports.readComment = function (req, res) {
  * 2- 更新评论回复内容
  */
 module.exports.replyComment = function (req, res) {
-    let openid = req.body.openid || req.query.openid;
-    console.log(openid);
-    let content_id = req.body.content_id || req.query.content_id;
-    let id = req.body.id || req.query.id;
-    let curAuthResponse = req.body.authResponse || req.query.authResponse || [];
+    let id = req.body.id || req.query.id; // 评论id
+    let openid = req.body.openid || req.query.openid; // 用户openid
+    let content_title = req.body.content_title || req.query.content_title; // 文章标题
+    console.log(content_title);
+    let content_id = req.body.content_id || req.query.content_id; // 文章id
+    let originComment = req.body.com_content || req.query.com_content; // 用户评论内容
+    let curAuthResponse = req.body.authResponse || req.query.authResponse || []; // 作者回复
     // console.log(curAuthResponse);
     // console.log('------------------------------');
     let query = `db.collection("comment").where({_id:"${id}"}).update({
@@ -135,41 +137,72 @@ module.exports.replyComment = function (req, res) {
                     url: `https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${access_token}`,
                     method: "post",
                     data: {
-                        "touser": `${openid}`,
-                        "template_id": "U7isDoq7uSGJ4f59-zEL5nYwUgofPQ_n2xR_ZL1JA_s",
-                        "page": `/pages/public/content/content?contentID=${content_id}`,
-                        "miniprogram_state": "developer",
-                        "lang": "zh_CN",
+                        "touser": `${openid}`, // 用户openid
+                        "template_id": "U7isDoq7uSGJ4f59-zEL5nYwUgofPQ_n2xR_ZL1JA_s", // 模板ID
+                        "page": `/pages/public/content/content?contentID=${content_id}`, // 跳转去详情页
+                        "miniprogram_state": "developer", // 所在环境
+                        "lang": "zh_CN", // 语言环境
                         "data": {
                             "thing1": { // 文章标题
-                                "value": "title"
+                                "value": `${content_title.length >= 20 ? content_title.slice(0, 17) + '...' : content_title}`
                             },
                             "thing2": { // 评论内容
-                                "value": `"${curAuthResponse}"`
+                                "value": `${originComment.length >= 20 ? originComment.slice(0, 17) + '...' : originComment}`
                             },
                             "thing3": { // 回复内容
-                                "value": "hahahaha"
+                                "value": `${curAuthResponse[0].reply_content.length >= 20 ? curAuthResponse[0].reply_content.slice(0, 17) : curAuthResponse[0].reply_content}`
                             },
                             "time4": { // 回复时间
-                                "value": "2021-01-28"
+                                "value": util.getNow()
                             }
                         }
                     }
                 }).then(subscribeRes => {
-                    console.log(subscribeRes.data);
+                    console.log("返回值: ", subscribeRes.data);
+                    switch (subscribeRes.data.errcode) {
+                        case 40003:
+                            res.json({
+                                code: 40003,
+                                errMsg: "回复成功! 无法推送! 因为touser字段openid为空或者不正确"
+                            })
+                            break;
+                        case 40037:
+                            res.json({
+                                code: 40037,
+                                errMsg: "回复成功! 无法推送! 因为订阅模板id为空不正确"
+                            })
+                            break;
+                        case 43101:
+                            res.json({
+                                code: 43101,
+                                errMsg: "回复成功! 无法推送! 因为用户拒绝接受消息"
+                            })
+                            break;
+                        case 47003:
+                            res.json({
+                                code: 47003,
+                                errMsg: "回复成功! 无法推送! 因为模板参数不准确"
+                            })
+                            break;
+                        case 41030:
+                            res.json({
+                                code: 40003,
+                                errMsg: "回复成功! 无法推送! 因为page路径不正确"
+                            })
+                            break;
+                        default:
+                            res.json({
+                                code: 1,
+                                errMsg: "回复成功! 用户已成功接收回复订阅消息!"
+                            })
+                            break;
+                    }
                 }).catch(subscribeErr => {
-                    console.log(subscribeErr);
+                    console.log("错误码: ", subscribeErr);
                 })
             })
             .catch(err => {
                 console.log(err);
             })
     })
-}
-
-/**
- * 3- 给小程序推送回复订阅消息
- */
-module.exports.sendCommentResponse = function (req, res) {
-
 }
