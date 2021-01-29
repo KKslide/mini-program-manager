@@ -38,7 +38,7 @@
                 </template>
             </el-table-column>
             <el-table-column prop="title" label="文章标题"></el-table-column>
-            <el-table-column prop="category" label="文章分类" width="100px"></el-table-column>
+            <el-table-column prop="category" label="文章分类" width="120px"></el-table-column>
             <el-table-column prop="addtime" label="添加时间" sortable>
                 <template slot-scope="scope">
                     <p>{{scope.row.addtime|date}}</p>

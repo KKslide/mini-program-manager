@@ -12,7 +12,7 @@
         >
             <!-- <el-menu-item index="admhome">首页</el-menu-item> -->
             <!-- <el-menu-item index="user" data-url="user">用户管理</el-menu-item> -->
-            <el-menu-item index="category" data-url="category">分类管理</el-menu-item >
+            <el-menu-item index="category" data-url="category" >分类管理</el-menu-item >
             <el-menu-item index="article">文章管理</el-menu-item>
             <el-menu-item index="massage">留言管理</el-menu-item>
         </el-menu>
@@ -20,11 +20,11 @@
             <el-dropdown>
                 <span class="el-dropdown-link">
                     <i class="el-icon-bell el-icon--left"></i>
-                    <span style="color:red;">99+</span>
+                    <span style="color: red">{{unread_total}}</span>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item>评论消息</el-dropdown-item>
-                    <el-dropdown-item>留言消息</el-dropdown-item>
+                    <el-dropdown-item>评论消息{{comment_unread_count}}</el-dropdown-item>
+                    <el-dropdown-item>留言消息{{msg_unread_count}}</el-dropdown-item>
                     <el-dropdown-item>全部已读</el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
@@ -40,15 +40,27 @@
 export default {
     data() {
         return {
-            activeIndex: this.$route.name
+            activeIndex: this.$route.name,
+            unread_data: null
         };
     },
-    mounted() {
-
+    created() {
+        this.$axios({
+            url: "/admin/getUnread",
+            method: "post"
+        }).then(res => {
+            console.log(res);
+            if (res.data.code == 1) {
+                this.$store.commit('setState', res.data.data)
+            }
+        })
+    },
+    beforeDestroy() {
+        // console.log('页面销毁');
     },
     methods: {
         handleSelect(key, keyPath) {
-            if(key!=null) this.$router.push({ name: key })
+            if (key != null) this.$router.push({ name: key })
         },
         logout() {
             this.$axios.get('/admin/logout').then(res => {
@@ -66,6 +78,17 @@ export default {
         $route(to, from) {
             this.activeIndex = to.name
         }
+    },
+    computed: {
+        comment_unread_count: function() {
+            return this.$store.getters.getComUnreadCount
+        },
+        msg_unread_count: function() {
+            return this.$store.getters.getMsgUnreadCount
+        },
+        unread_total: function() {
+            return this.$store.getters.getUnreadTotal
+        }
     }
 }
 </script>
@@ -79,7 +102,7 @@ export default {
         top: 50%;
         transform: translateY(-50%);
         right: 10px;
-        span.el-dropdown-link{
+        span.el-dropdown-link {
             margin-left: 20px;
         }
     }

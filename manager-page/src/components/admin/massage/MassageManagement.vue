@@ -1,6 +1,6 @@
 <template>
     <div id="massage_list">
-        <el-table :data="tableData" v-loading="tableLoading" stripe style="width: 100%" :cell-class-name="setCell">
+        <el-table :data="tableData" v-loading="tableLoading" border stripe style="width: 100%" :cell-class-name="setCell">
             <el-table-column prop="addtime" label="日期"></el-table-column>
             <el-table-column prop="guest_name" label="微信头像/昵称">
                 <template slot-scope="scope">

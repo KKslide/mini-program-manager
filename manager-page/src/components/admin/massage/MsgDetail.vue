@@ -68,11 +68,12 @@ export default {
                     data:{
                         id:id
                     }
-                }).then(res=>{
+                }).then(res => {
                     // console.log(res);
                     // if(res.data.code == 1){ // 变更读取状态
                     //     this.$message()
                     // }
+                    this.$store.commit('unReadDecrease', 'msg_unread_count')
                 }).catch(err=>{
                     console.log(err);
                 }).finally(_=>{

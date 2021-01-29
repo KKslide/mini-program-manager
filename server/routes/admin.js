@@ -75,6 +75,9 @@ router.post("/comment/read", commentHandler.readComment)
 router.post("/comment/reply", commentHandler.replyComment)
 /* ************ 评论 ************* */
 
+/* ************ 获取未读取 ************* */
+router.post("/getUnread", msgHandler.getUnread);
+
 // 图片上传接口(本地调试)
 router.post("/img_upload", function (req, res) {
     var form = new formidable.IncomingForm()

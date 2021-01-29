@@ -47,17 +47,30 @@ const getTokenString = function (callback) {
  * @param {String} query 查询语句
  */
 const axiosHandler = function (type, query) {
-    return axios({
-        url: `https://api.weixin.qq.com/tcb/${type}?access_token=${access_token}`,
-        data: {
-            env: `${wxData.env}`,
-            query: `${query}`
-        },
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        }
-    })
+    if (type == "invokecloudfunction") { // 调用云函数
+        return axios({
+            url: `https://api.weixin.qq.com/tcb/${type}?access_token=${access_token}&env=${wxData.env}&name=getHandler`,
+            data: {
+                collection: `getUnRead`
+            },
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+    } else { // 调用其他httpAPI
+        return axios({
+            url: `https://api.weixin.qq.com/tcb/${type}?access_token=${access_token}`,
+            data: {
+                env: `${wxData.env}`,
+                query: `${query}`
+            },
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+    }
 }
 
 /**
@@ -176,7 +189,7 @@ module.exports.replyMSG = function (req, res) {
                         "touser": `${openid}`, // 用户openid
                         "template_id": "SFM32Vr2jBXvHar82Otokx2xKUxaWIqt1sQj6pKa6sE", // 模板ID
                         "page": `/pages/5-contact/contact`, // 跳转去详情页
-                        "miniprogram_state": "developer", // 所在环境
+                        "miniprogram_state": "developer", // 所在环境 develop-开发版; trial-体验版; formal-正式版;
                         "lang": "zh_CN", // 语言环境
                         "data": {
                             "thing2": { // 回复人 - 就写自己吧 KK
@@ -233,6 +246,26 @@ module.exports.replyMSG = function (req, res) {
                 }).catch(subscribeErr => {
                     console.log("错误码: ", subscribeErr);
                 })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    })
+}
+
+/**
+ * 5- 获取未读内容总数
+ */
+module.exports.getUnread = function (req, res) {
+    getTokenString(_ => {
+        axiosHandler("invokecloudfunction")
+            .then(response => {
+                console.log(response.data);
+                if (response.data.errcode == 0 && response.data.errmsg == 'ok') {
+                    res.json({ code: 1, data: JSON.parse(response.data.resp_data)["list"][0] })
+                } else {
+                    res.json({ code: 0 })
+                }
             })
             .catch(err => {
                 console.log(err);

@@ -138,6 +138,7 @@ export default {
                         this.commentDetail = row.com_content; // 当前评论内容
                         this.responseDetail = row.auth_response; // 当前评论的回复列表
                         this.curComment[index]['auth_is_read'] = 1; // 设置已读消息
+                        this.$store.commit('unReadDecrease', 'comment_unread_count')
                     }
                 }).finally( _ => this.detailLoading = false )
             } else { // 已读状态
