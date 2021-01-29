@@ -44,6 +44,7 @@ module.exports = {
             // 'bootstrap': 'bootstrap',
             'axios': 'axios',
             'vue': 'Vue',
+            'vuex': 'Vuex',
             'element-ui': 'element-ui',
             // 'jquery': 'jQuery',
             // 'Typed': 'typed.js',

@@ -2,7 +2,6 @@
 import App from './App.vue'
 import router from './router'
 
-
 import './styles/main.moudle.scss' // 引入自己的样式
 
 import Filter from "./filter/index"
@@ -36,7 +35,10 @@ Vue.prototype.$axios = axios
 
 Vue.config.productionTip = false
 
+import store from './store'
+
 new Vue({
     router,
+    store,
     render: h => h(App)
 }).$mount('#app')
