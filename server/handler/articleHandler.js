@@ -218,3 +218,38 @@ module.exports.delComment = function (req, res) {
             })
     })
 }
+
+/**
+ * 6- 获取含有未读消息的文章
+ */
+module.exports.getUnreadCmtArticle = function (req, res) {
+    let pageNo = req.query.pageNo || req.body.pageNo || 1,
+        pageSize = req.query.pageSize || req.body.pageSize || 5,
+        title = req.query.title || req.body.title || "", // 需要匹配的文章标题
+        category = req.query.category || req.body.category || "", // 需要匹配的文章分类
+        rangeTime = req.query.rangeTime || req.body.rangeTime || []; // 需要匹配的时间范围
+    let searchObj = {
+        pageNo: Number(pageNo),
+        pageSize: Number(pageSize),
+        title: title,
+        category: category,
+        rangeTime: rangeTime
+    }
+    console.log(searchObj);
+    getTokenString(_ => {
+        axiosHandler('invokecloudfunction', null, 'getUnreadCommentArticle', searchObj)
+            .then(response => {
+                if (response.data.errmsg == 'ok') {
+                    res.json({
+                        code: 1,
+                        data: JSON.parse(response.data.resp_data).data,
+                        total: JSON.parse(response.data.resp_data).total
+                    })
+                } else {
+                    res.json({ code: 0, msg: response.data.errmsg })
+                }
+            }).catch(err => {
+                console.log(err);
+            })
+    })
+}

@@ -15,7 +15,7 @@
             </el-table-column>
             <el-table-column prop="guest_id" label="微信名"></el-table-column>
             <el-table-column prop="com_content" label="评论内容" width="250"></el-table-column>
-            <el-table-column prop="auth_is_read" label="已读">
+            <el-table-column prop="auth_is_read" label="已读" sortable>
                 <template slot-scope="scope">
                     <span style="color:green;" v-if="scope.row.auth_is_read==1">是</span>
                     <span style="color:red;" v-else>否</span>
@@ -105,6 +105,7 @@ export default {
                             return v._id != row._id
                         });
                         this.upDateArc(row)
+                        this.$store.commit('unReadDecrease', 'comment_unread_count') // 设置减少一条已读消息
                     } else {
                         this.$message({
                             type: 'danger',
@@ -137,8 +138,11 @@ export default {
                     if(res.data.code == 1){
                         this.commentDetail = row.com_content; // 当前评论内容
                         this.responseDetail = row.auth_response; // 当前评论的回复列表
-                        this.curComment[index]['auth_is_read'] = 1; // 设置已读消息
-                        this.$store.commit('unReadDecrease', 'comment_unread_count')
+                        // this.curComment[index]['auth_is_read'] = 1; // 设置已读消息
+                        this.curComment.filter(v=>{
+                            return v._id == row._id
+                        })[0]['auth_is_read'] = 1;
+                        this.$store.commit('unReadDecrease', 'comment_unread_count') // 设置减少一条已读消息
                     }
                 }).finally( _ => this.detailLoading = false )
             } else { // 已读状态
@@ -178,7 +182,7 @@ export default {
                     authResponse: currentComment["auth_response"] // 回复内容
                 }
             }).then(res => {
-                console.log(res);
+                // console.log(res);
                 if(res.data.code == 1){
                     this.$message({ type: 'success', message: "回复成功! 对方将收到你的回复信息" });
                 }else{

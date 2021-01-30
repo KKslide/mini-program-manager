@@ -59,12 +59,12 @@
                     <span class="hasNew" v-if="scope.row.comment.filter(v=>{return v.auth_is_read==0}).length>0">new</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="isShow" label="是否显示" width="100px">
+            <el-table-column prop="isShow" label="是否显示" width="100px" sortable>
                 <template slot-scope="scope">
                     <p>{{scope.row.isShow=="1"?"是":"否"}}</p>
                 </template>
             </el-table-column>
-            <el-table-column prop="isHot" label="是否热文" width="100px">
+            <el-table-column prop="isHot" label="是否热文" width="100px" sortable>
                 <template slot-scope="scope">
                     <p>{{scope.row.isHot=="1"?"是":"否"}}</p>
                 </template>
@@ -80,10 +80,6 @@
         <!-- 评论列表弹窗 -->
         <el-dialog :title="'文章【'+curChosenArcData.title+'】的评论'" :visible.sync="commentModel" :modal-append-to-body="true" width="80%" center :close-on-click-modal="false">
             <CommentCom :curChosenArcComment="curChosenArcData" :upDateArc="upDateComment"></CommentCom>
-            <!-- <span slot="footer" class="dialog-footer">
-                <el-button @click="commentModel = false">关 闭</el-button>
-                <el-button type="primary" @click="msgCheckHandler">确 定</el-button>
-            </span> -->
         </el-dialog>
         <!-- 评论列表弹窗 -->
 
@@ -402,10 +398,21 @@ export default {
         } else {
             this.uploadList = this.formatImgArr(this.initUrl)
         }
+        this.$EventBus.$on("navUnreadMSGClick", (msg) => {
+            this.$store.commit('setIscheckUnread',true)
+            console.log(msg);
+            this.tableLoading=true
+            this.getArticles()
+        });
     },
     updated() {
         if (this.$refs.vueCropper) {
             this.$refs.vueCropper.Update()
+        }
+    },
+    computed: {
+        isCheckUnread: function(){ // 是否为检索有未读消息的文章
+            return this.$store.getters.isCheckUnread
         }
     },
     watch: {
@@ -420,7 +427,10 @@ export default {
                     this.uploadList = this.formatImgArr(val)
                 }
             }
-        }
+        },
+        // isCheckUnread(nv,ov){
+        //     this.getArticles(this.articleSearch)
+        // }
     },
     methods: {
         rest() { //   重置表单
@@ -453,7 +463,10 @@ export default {
             }
         },
         getArticles(searchObj) {  // 获取文章列表
-            this.$axios({ url: '/admin/articles', params:Object.assign(searchObj||{}, { pageNo: this.curPage, pageSize: this.pageSize }), method: 'post' })
+            let postUrl = !this.isCheckUnread
+                ? "/admin/articles" 
+                : "/admin/articles/commentunread" // 不查询未读消息的文章列表
+            this.$axios({ url: postUrl, params:Object.assign(searchObj||{}, { pageNo: this.curPage, pageSize: this.pageSize }), method: 'post' })
                 .then(res => {
                     this.total = res.data.total; // 总共的数量
                     this.pages = Math.ceil(this.total / this.pageSize); // 总页数
@@ -577,7 +590,7 @@ export default {
                             }
                         }).then(() => {
                             this.tableLoading=true;
-                            this.getArticles();
+                            this.getArticles(this.articleSearch);
                             this.close = true;
                             this.$refs.drawer.closeDrawer();
                         })
@@ -637,17 +650,11 @@ export default {
                 })
             })
         },
-        searchHandler(){ // 文章搜索
+        searchHandler(){ // 文章搜索 - 要将是否为未回复查询的状态改回false
+            this.$store.commit('setIscheckUnread',false)
             this.tableLoading = true;
             this.getArticles(this.articleSearch)
         },
-
-        /* ********* 更新评论已读状态 *********** */
-        msgCheckHandler(){
-            // console.log(this.curChosenArcData)
-            // console.log(this.curChosenArcData.comment);
-        },
-        /* ********* 更新评论已读状态 *********** */
 
         /* ********* wangEditor编辑器的配置 *********** */
         editorInit () { // wangEditor编辑器的配置
@@ -740,7 +747,7 @@ export default {
             })
             return result
         },
-        beforeClose(done) {
+        beforeClose(done) { // 关闭截图弹窗组件回调
             this.uploadList.pop()
             this.cropperModel = false
         },

@@ -27,6 +27,12 @@
                     ></el-image>
                 </template>
             </el-table-column>
+            <el-table-column prop="isShow" label="是否显示">
+                <template slot-scope="scope">
+                    <span v-if="scope.row.isShow=='1'" style="color:#5fc971">是</span>
+                    <span v-else style="color:#ec5851">否</span>
+                </template>
+            </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button size="mini" :disabled="scope.row.name=='HOT'" @click="edit(scope.$index, scope.row)">编辑</el-button>
@@ -42,6 +48,15 @@
             <el-form :model="categoryDetail" ref="categoryDetail" label-width="120px" :rules="rules" @submit.native.prevent="">
                 <el-form-item label="分类名称" prop="name">
                     <el-input v-model="categoryDetail.name" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="是否显示" prop="isShow">
+                    <el-switch
+                        v-model="categoryDetail.isShow"
+                        active-color="#13ce66"
+                        inactive-color="#ff4949"
+                        active-value="1"
+                        inactive-value="0"
+                    ></el-switch>(绿色为开启显示,选择关闭则不会在页面中显示)
                 </el-form-item>
                 <el-form-item label="分类缩略图" prop="banner">
                     <span>(banner长宽要求：2278x516)</span>
@@ -85,6 +100,7 @@
                 <el-button type="primary" @click="commitHandle(handleType)">确 定</el-button>
             </span>
         </el-dialog>
+        <!-- 分类排序组件 -->
         <el-dialog title="分类排序" :visible.sync="sortDialogVisible" width="50%" :before-close="handleCancelSort">
             <div class="sortDialogVisible">
                 <div>{{ drag ? "排序中" : "拖拽可排序" }}</div>
@@ -128,6 +144,7 @@ export default {
             reupload: true, // 控制"重新上传"开关
             reuploadWidth: this.height * 0.7, // 动态改变”重新上传“大小
             categoryData: [],
+            isShow:true, // 是否显示控件
             categoryDetail: {
                 id: "",
                 name: "",
@@ -135,11 +152,13 @@ export default {
                 index:"",
                 addtime: "",
                 edittime: "",
+                isShow: "1"
             },
             sortableCatetegoryData:[], // 拖拽排序分类数据
             rules:{
                 name:[{ required: true, message: '内容不能为空', trigger: 'blur' }],
-                banner:[{required:true,message:'请上传分类图banner',trigger:'blur'}]
+                banner:[{required:true,message:'请上传分类图banner',trigger:'blur'}],
+                isShow:[{required:true,message:'请选择是否显示',trigger:'blur'}]
             },
             drag: false, // 是否开启拖拽
             fullscreenLoading: false, // 全屏loading
@@ -162,7 +181,8 @@ export default {
                             banner:v.banner,
                             index:v.index,
                             addtime: v.addtime ,
-                            edittime: v.edittime
+                            edittime: v.edittime,
+                            isShow: v.isShow
                         }
                     });
                     this.categoryData = response
@@ -195,6 +215,7 @@ export default {
                     data:{
                         'name':this.categoryDetail.name,
                         'banner':this.categoryDetail.banner,
+                        "isShow": this.categoryDetail.isShow,
                         'index': this.categoryData.length // 默认排序在最后一个
                     },
                     method:'post'
@@ -215,6 +236,7 @@ export default {
                     data: {
                         "id": this.categoryDetail.id,
                         "name": this.categoryDetail.name,
+                        "isShow": this.categoryDetail.isShow,
                         "banner": this.categoryDetail.banner,
                     }
                 }).then(res => {
@@ -241,6 +263,7 @@ export default {
         open(){ // 打开添加模态框
             this.dialogVisible=true;
             this.categoryDetail.name="";
+            this.categoryDetail.isShow="1",
             this.categoryDetail.banner="http://example.kkslide.fun/banner.jpg";
             this.handleType="add";
         },
@@ -283,6 +306,7 @@ export default {
             this.dialogVisible=true;
             this.categoryDetail.id=row._id;
             this.categoryDetail.name=row.name;
+            this.categoryDetail.isShow=row.isShow;
             this.categoryDetail.banner=row.banner;
         },
         setIdColumn({ row, column, rowIndex }) { // 设置栏目样式
@@ -319,7 +343,7 @@ export default {
             }).catch(err => {
                 console.log(err);
             }).finally(_ => {
-                console.log('done!!!!!');
+                console.log('done!!! sort successfully!!');
                 this.sortDialogVisible=false
                 this.fullscreenLoading=false
             })
@@ -339,7 +363,8 @@ export default {
             let tempForm = new FormData();
             tempForm.append('image',files.raw);
             this.$refs.uploading.style.display = 'block';
-            this.$axios.post('/admin/img_upload',tempForm).then(res=>{
+            // this.$axios.post('/admin/img_upload',tempForm).then(res=>{
+            this.$axios.post('/pic/upload',tempForm).then(res=>{
                 this.$refs.uploading.style.display = 'none';
                 if(res.status==200){
                     this.categoryDetail.banner = res.data.imageUrl;

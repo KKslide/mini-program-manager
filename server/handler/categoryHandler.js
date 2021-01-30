@@ -133,6 +133,7 @@ module.exports.addCate = function (req, res) {
         name: req.body.name || "",
         banner: req.body.banner || "",
         index: req.body.index || 0,
+        isShow: req.body.isShow || "1",
         addtime: new Date(),
         edittime: new Date()
     }
@@ -180,6 +181,7 @@ module.exports.delCate = function (req, res) {
 module.exports.editCate = function (req, res) {
     let obj = {
         name: req.body.name || "",
+        isShow: req.body.isShow || "1",
         banner: req.body.banner || "",
         edittime: new Date()
     };

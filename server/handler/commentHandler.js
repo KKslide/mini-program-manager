@@ -140,7 +140,7 @@ module.exports.replyComment = function (req, res) {
                         "touser": `${openid}`, // 用户openid
                         "template_id": "U7isDoq7uSGJ4f59-zEL5nYwUgofPQ_n2xR_ZL1JA_s", // 模板ID
                         "page": `/pages/public/content/content?contentID=${content_id}`, // 跳转去详情页
-                        "miniprogram_state": "developer", // 所在环境
+                        "miniprogram_state": "formal", // 所在环境 develop-开发版; trial-体验版; formal-正式版;
                         "lang": "zh_CN", // 语言环境
                         "data": {
                             "thing1": { // 文章标题

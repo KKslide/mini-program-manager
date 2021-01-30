@@ -6,6 +6,7 @@ import './styles/main.moudle.scss' // 引入自己的样式
 
 import Filter from "./filter/index"
 Vue.use(Filter) // 使用过滤器
+Vue.prototype.$EventBus = new Vue() // 事件总线
 
 const service = axios.create({
     baseURL: process.env.NODE_ENV === 'development'

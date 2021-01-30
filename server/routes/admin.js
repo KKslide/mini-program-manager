@@ -40,6 +40,9 @@ router.post('/category/sort', categoryHandler.sortCate);
 // 获取文章接口
 router.post("/articles", articleHandler.getArticle);
 
+// 获取有未读评论的文章
+router.post("/articles/commentunread", articleHandler.getUnreadCmtArticle);
+
 // 添加文章接口
 router.post('/articles/add', articleHandler.addArticle);
 
@@ -75,7 +78,7 @@ router.post("/comment/read", commentHandler.readComment)
 router.post("/comment/reply", commentHandler.replyComment)
 /* ************ 评论 ************* */
 
-/* ************ 获取未读取 ************* */
+/* ************ 获取未读取总数(包括文章评论和留言) ************* */
 router.post("/getUnread", msgHandler.getUnread);
 
 // 图片上传接口(本地调试)

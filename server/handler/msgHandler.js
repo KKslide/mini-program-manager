@@ -2,6 +2,7 @@ const fs = require("fs");
 const wxData = require("../lib/wxData");
 const axios = require("axios");
 const util = require("../util/util");
+const { response } = require("express");
 let access_token = "";
 /*
     每次读取json文件, 判断access_token字段是否存在, 并且判断record_time字段时常是否超出2小时
@@ -46,13 +47,15 @@ const getTokenString = function (callback) {
  * @param {String} type apiURL参数
  * @param {String} query 查询语句
  */
-const axiosHandler = function (type, query) {
+const axiosHandler = function (type, query, collection, searchObj) {
+    console.log("打印云函数参数值列表: ",Object.assign({ collection: `${collection}` }, searchObj || {}));
     if (type == "invokecloudfunction") { // 调用云函数
         return axios({
             url: `https://api.weixin.qq.com/tcb/${type}?access_token=${access_token}&env=${wxData.env}&name=getHandler`,
-            data: {
-                collection: `getUnRead`
-            },
+            // data: {
+            //     collection: `${collection}`
+            // },
+            data: Object.assign({ collection: `${collection}` }, searchObj || {}),
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -77,35 +80,30 @@ const axiosHandler = function (type, query) {
  * 1- 获取留言列表
  */
 module.exports.getMSG = function (req, res) {
-    let pageNo = req.query.pageNo || req.body.pageNo || 1,
-        pageSize = req.query.pageSize || req.body.pageSize || 5,
-        dataTotal = 0;
-    let query1 = `db.collection("message").count()`;
-    let query2 = `db.collection("message").aggregate().sort({addtime:-1}).skip(${(pageNo - 1) * pageSize}).limit(${pageSize}).end()`;
+    let searchObj = {
+        pageNo: Number(req.query.pageNo || req.body.pageNo || 1),
+        pageSize: Number(req.query.pageSize || req.body.pageSize || 5),
+        auth_is_read: req.query.auth_is_read || req.body.auth_is_read || "",
+        guest_name: req.query.guest_name || req.body.guest_name || "",
+        rangeTime: req.query.rangeTime || req.body.rangeTime || [],
+        message: req.query.message || req.body.message || "",
+        dataTotal: 0
+    }
+    console.log("搜索对象: ",searchObj);
     getTokenString(_ => {
-        axiosHandler('databasecount', query1)
-            .then(res1 => {
-                if (res1.data.errcode != 0 || res1.data.errmsg != "ok") {
-                    return res.json({ code: 1, msg: "接口查询错误,请查看后台报错" })
+        axiosHandler('invokecloudfunction', null, 'message', searchObj)
+            .then(response => {
+                // console.log(response.data);
+                // console.log("获取到留言内容:", JSON.parse(response.data.resp_data));
+                // console.log('最终返回:', Object.assign({ code: 1 }, JSON.parse(response.data.resp_data)));
+                if (response.data.errcode == 0 && response.data.errmsg == 'ok') {
+                    res.json(Object.assign({ code: 1 }, JSON.parse(response.data.resp_data)))
+                } else {
+                    res.json({ code: 0 })
                 }
-                dataTotal = res1.data.count;
-                axiosHandler('databaseaggregate', query2)
-                    .then(msgResponse => {
-                        if (msgResponse.data.errcode == 0 && msgResponse.data.errmsg == "ok") {
-                            res.json({
-                                messages: msgResponse.data.data,
-                                total: dataTotal, // 数据总数
-                                pages: Math.ceil(dataTotal / pageSize), // 页总数
-                            });
-                        }
-                    }).catch(msgErr => {
-                        console.log(msgErr);
-                        res.json({ code: 1, msg: "接口查询错误,请查看后台报错" })
-                    })
             })
-            .catch(err1 => {
-                console.log(err1);
-                res.json({ code: 1, msg: "接口查询错误,请查看后台报错" })
+            .catch(err => {
+                console.log(err);
             })
     })
 }
@@ -189,7 +187,7 @@ module.exports.replyMSG = function (req, res) {
                         "touser": `${openid}`, // 用户openid
                         "template_id": "SFM32Vr2jBXvHar82Otokx2xKUxaWIqt1sQj6pKa6sE", // 模板ID
                         "page": `/pages/5-contact/contact`, // 跳转去详情页
-                        "miniprogram_state": "developer", // 所在环境 develop-开发版; trial-体验版; formal-正式版;
+                        "miniprogram_state": "formal", // 所在环境 develop-开发版; trial-体验版; formal-正式版;
                         "lang": "zh_CN", // 语言环境
                         "data": {
                             "thing2": { // 回复人 - 就写自己吧 KK
@@ -258,11 +256,11 @@ module.exports.replyMSG = function (req, res) {
  */
 module.exports.getUnread = function (req, res) {
     getTokenString(_ => {
-        axiosHandler("invokecloudfunction")
+        axiosHandler("invokecloudfunction", null, "getUnRead")
             .then(response => {
                 console.log(response.data);
                 if (response.data.errcode == 0 && response.data.errmsg == 'ok') {
-                    res.json({ code: 1, data: JSON.parse(response.data.resp_data)["list"][0] })
+                    res.json({ code: 1, data: JSON.parse(response.data.resp_data) })
                 } else {
                     res.json({ code: 0 })
                 }
