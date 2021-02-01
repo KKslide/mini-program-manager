@@ -122,6 +122,7 @@
             ref="drawer"
             size="95%"
             :modal-append-to-body="true"
+            v-loading="drawerLoading"
         >
             <div class="demo-drawer__content" style="padding:0 15px 10px 15px;">
                 <el-form :model="form" ref="form" :rules="rules">
@@ -308,6 +309,8 @@ export default {
             dialogType: null, // 判断是添加还是编辑
             loading: false,
             tableLoading:true, // 表格loading
+            drawerLoading: false, // 编辑框上传图片时的loading
+            editorLoading: null, // 编辑器文案添加图片的loading
             curChosenArcData: {}, // 当前选中文章的评论数据
             commentModel: false, // 评论模块弹窗
             hideUpload: false, //   缩略图上传按钮隐藏
@@ -343,7 +346,7 @@ export default {
                 title: [{ required: true, message: '写一下文章标题啦', trigger: 'blur' }],
                 category: [{ required: true, message: '选一下文章类型啦', trigger: 'blur' }],
                 poster: [{ required: true, message: '没有上传封面图片噢', trigger: 'blur' }],
-                description: [{ required: true, message: '选一下文章类型啦', trigger: 'blur' }],
+                description: [{ required: true, message: '写一下文章描述啦', trigger: 'blur' }],
                 composition: [{ required: true, message: '文章没有写东西呢', trigger: 'blur' }],
             },
         }
@@ -666,11 +669,40 @@ export default {
                     showFullScreen: true, // 是否显示全屏按钮
                     uploadImgAccept: ["jpg", "jpeg", "png", "gif", "bmp"], // 限制上传图片类型
                     uploadImgMaxLength: 1, // 一次最多上传 1张图片
-                    uploadImgServer: "/pic/upload", // 图片上传接口图片
+                    // uploadImgServer: "/pic/upload", // 图片上传接口图片
+                    uploadImgServer: "/admin/img_upload", // 图片上传接口图片
                     // linkImgCallback: this.internetPic, // 上传网络图片成功回调
                     uploadImgMaxSize: 2 * 1024 * 1024, // 限制上传图片大小为 2M
                     uploadImgTimeout: 60 * 1000, // 上传图片超时时间
                     uploadFileName: "file",
+                    uploadImgHooks:{
+                        before: _ => {
+                            this.editorLoading = this.$loading({
+                                lock: true,
+                                text: '图片上传中...',
+                                spinner: 'el-icon-loading',
+                                background: 'rgba(0, 0, 0, 0.7)'
+                            })
+                        },
+                        success: _ => {
+                            // console.log('success~~~');
+                            this.editorLoading.close()
+                        },
+                        faile: _ => {
+                            // console.log('failed!!!!!');
+                            this.editorLoading.close()
+                        },
+                        timeout: _ => {
+                            this.editorLoading.close()
+                        },
+                        customInsert: (insertImgFn, result) => {
+                            this.editorLoading.close()
+                            // result 即服务端返回的接口
+                            // console.log('customInsert', result)
+                            // insertImgFn 可把图片插入到编辑器，传入图片 src ，执行函数即可
+                            insertImgFn(result.data[0])
+                        }
+                    },
                     linkCheck (text, link) {
                         return IsURL(link) ? true : "插入的不是URL地址, 请重新输入";
                     },
@@ -717,6 +749,7 @@ export default {
             let fileOfBlob = new File([data],'uploadPic.'+data.type.split('/')[1]);
             imgData.append('file', fileOfBlob);
             imgData.image = fileOfBlob;
+            this.drawerLoading = true;
             this.$axios.post(this.targetUrl, imgData).then(res => {
                 // 上传完成后隐藏正在上传
                 this.$refs.uploading.style.display = 'none'
@@ -731,6 +764,7 @@ export default {
                     // 上传失败则显示上传失败，如多图则从图片列表删除图片
                     this.$refs.failUpload.style.display = 'block'
                 }
+                this.drawerLoading = false;
             })
             this.cropperModel = false
         },
