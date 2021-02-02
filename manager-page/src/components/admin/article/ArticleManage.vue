@@ -59,12 +59,12 @@
                     <span class="hasNew" v-if="scope.row.comment.filter(v=>{return v.auth_is_read==0}).length>0">new</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="isShow" label="是否显示" width="100px" sortable>
+            <el-table-column prop="isShow" label="是否显示" width="120px" sortable>
                 <template slot-scope="scope">
                     <p>{{scope.row.isShow=="1"?"是":"否"}}</p>
                 </template>
             </el-table-column>
-            <el-table-column prop="isHot" label="是否热文" width="100px" sortable>
+            <el-table-column prop="isHot" label="是否热文" width="120px" sortable>
                 <template slot-scope="scope">
                     <p>{{scope.row.isHot=="1"?"是":"否"}}</p>
                 </template>

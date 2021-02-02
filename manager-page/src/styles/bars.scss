@@ -1,0 +1,39 @@
+/* 四条黑边柱子 */
+#site-border-top,
+#site-border-bottom,
+#site-border-left,
+#site-border-right {
+    background: #000 !important;
+    position: fixed;
+    z-index: 1;
+}
+
+#site-border-left,
+#site-border-right {
+    top: 0;
+    bottom: 0;
+    width: 10px;
+}
+
+#site-border-left {
+    left: 0;
+}
+
+#site-border-right {
+    right: 0;
+}
+
+#site-border-top,
+#site-border-bottom {
+    left: 0;
+    right: 0;
+    height: 10px;
+}
+
+#site-border-top {
+    top: 0;
+}
+
+#site-border-bottom {
+    bottom: 0;
+}

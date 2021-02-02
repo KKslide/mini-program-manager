@@ -5,10 +5,7 @@
         <div id="site-border-top"></div>
         <div id="site-border-bottom"></div>
 
-        <el-scrollbar style="height:100%" ref="elScrollBar" v-if="!isMobile">
-            <router-view></router-view>
-        </el-scrollbar>
-        <router-view v-else></router-view>
+        <router-view></router-view>
     </div>
 </template>
 
@@ -25,31 +22,10 @@ export default {
             i: 1, // 辅助标记
             $timer: null,
             /* *****************无操作自动登出****************** */
-
-            isShow: true,
-            isMobile: null
         };
     },
     methods: {
-        version () { // 判断是否为移动端
-            var u = navigator.userAgent,
-                app = navigator.appVersion;
-            return {
-                trident: u.indexOf("Trident") > -1, //IE内核
-                presto: u.indexOf("Presto") > -1, //opera内核
-                webKit: u.indexOf("AppleWebKit") > -1, //苹果、谷歌内核
-                gecko: u.indexOf("Gecko") > -1 && u.indexOf("KHTML") == -1, //火狐内核
-                mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
-                ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
-                android: u.indexOf("Android") > -1 || u.indexOf("Linux") > -1, //android终端或者uc浏览器
-                iPhone: u.indexOf("iPhone") > -1, //是否为iPhone或者QQHD浏览器
-                iPad: u.indexOf("iPad") > -1, //是否iPad
-                webApp: u.indexOf("Safari") == -1, //是否web应该程序，没有头部与底部
-                weixin: u.indexOf("MicroMessenger") > -1, //是否微信 （2015-01-22新增）
-                qq: u.match(/\sQQ/i) == " qq" //是否QQ
-            };
-        },
-        isOperate() {
+        isOperate () { // 记录用户操作,计时自动登出
             if (this.$route.path.indexOf('login') > -1) return false; // 登陆页面不操作
             clearInterval(this.$timer)
             this.lastTime = new Date().getTime() // 最后一次点击时间
@@ -58,7 +34,7 @@ export default {
             this.handleInterval(); // 一开始程序 默认执行定制器
             this.isDone = false;
         },
-        handleInterval() { // 定时器
+        handleInterval () { // 定时器
             if (this.$route.path.indexOf('login') > -1) return false; // 登陆页面不操作
             this.$timer = setInterval(() => {
                 this.currentTime = new Date().getTime() // 当前时间
@@ -87,7 +63,7 @@ export default {
                 }
             }, 1000)
         },
-        handleReset() { // 重置计时
+        handleReset () { // 重置计时
             // console.log('页面操作！！！！！！')
             this.i = 1;
             this.lastTime = new Date().getTime();
@@ -100,7 +76,7 @@ export default {
                 this.handleInterval()
             }
         },
-        domEvent() { // 所有dom操作事件
+        domEvent () { // 所有dom操作事件
             document.onclick = () => { // 单击事件
                 this.handleReset()
             }
@@ -148,27 +124,17 @@ export default {
     },
     watch: {
         $route: function (nv, ov) {
-            if (!nv || nv.name == "login" || nv.path.indexOf("admin") > -1) {
-                this.isShow = false;
-            } else {
-                this.isShow = true;
-            }
             this.isOperate()
         }
     },
-    beforeCreate () {
-        this.$nextTick(_ => {
-            this.isMobile = this.version().mobile;
-        });
-    },
-    created(){
+    created () {
         this.isOperate()
     }
 };
 </script>
 
 <style lang="less" scoped>
-body{
-    touch-action:none
+body {
+    touch-action: none;
 }
 </style>

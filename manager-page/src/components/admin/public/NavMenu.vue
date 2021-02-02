@@ -114,7 +114,6 @@ export default {
 
 <style lang="less" scoped>
 #nav {
-    margin-top: 10px;
     position: relative;
     .admin_tip {
         position: absolute;
@@ -129,6 +128,7 @@ export default {
 .el-dropdown-link {
     cursor: pointer;
     color: #fff;
+    font-size: 14px;
 }
 .el-icon-arrow-down {
     font-size: 12px;
