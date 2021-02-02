@@ -663,14 +663,14 @@ export default {
         editorInit () { // wangEditor编辑器的配置
             this.$nextTick(_=>{
                 this.editor = new wangEditor("#wangEditor");
-                this.editor.highlight = hljs; // 代码高亮
+                // this.editor.highlight = hljs; // 代码高亮
                 Object.assign(this.editor.config, {
                     height:180,
                     showFullScreen: true, // 是否显示全屏按钮
                     uploadImgAccept: ["jpg", "jpeg", "png", "gif", "bmp"], // 限制上传图片类型
                     uploadImgMaxLength: 1, // 一次最多上传 1张图片
-                    // uploadImgServer: "/pic/upload", // 图片上传接口图片
-                    uploadImgServer: "/admin/img_upload", // 图片上传接口图片
+                    uploadImgServer: "/pic/upload", // 图片上传接口图片
+                    // uploadImgServer: "/admin/img_upload", // 图片上传接口图片
                     // linkImgCallback: this.internetPic, // 上传网络图片成功回调
                     uploadImgMaxSize: 2 * 1024 * 1024, // 限制上传图片大小为 2M
                     uploadImgTimeout: 60 * 1000, // 上传图片超时时间
