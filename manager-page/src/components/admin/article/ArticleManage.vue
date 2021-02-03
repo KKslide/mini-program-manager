@@ -256,7 +256,7 @@
 <script>
 import CommentCom from './CommentManage' // 评论模块
 import Cropper from './Cropper' // 裁切模块
-import { IsURL, deepClone } from "../../../utils/utils" // util函数
+import { IsURL, deepClone, BFS } from "../../../utils/utils" // util函数
 export default {
     data() {
         return {
@@ -575,6 +575,20 @@ export default {
                         })
                     }
                     if (this.dialogType == 'edit') { // 编辑文章
+                        console.log(this.form.composition );
+                        console.log('---------------------');
+                        let dom = new DOMParser().parseFromString(this.form.composition,"text/html");
+                        let domTree =  BFS.do(dom.childNodes);
+                        console.log(dom.childNodes);
+                        console.log(domTree);
+                        domTree.forEach(v=>{
+                            if (v.tagName == "FONT") {
+                                v.setAttribute("style", "font-family:" + (v.getAttribute("face") || "inherit") + ";" +
+                                    "font-size:" + this.getFontSize(Number(v.getAttribute("size")))+"color:"+(v.getAttribute("color")||'inherit')+";")
+                            }
+                        })
+                        console.log(dom.body.innerHTML);
+                        this.form.composition = dom.body.innerHTML;
                         this.$axios({
                             url: '/admin/articles/edit',
                             method: 'post',
@@ -786,6 +800,34 @@ export default {
             this.cropperModel = false
         },
         /* ************* cropper截图上传 ************** */
+
+        getFontSize(val) { // 过滤标签字体的大小
+            let res = null
+            switch (val) {
+                case 1:
+                    res = '10px;'
+                    break;
+                case 2:
+                    res = '13px;'
+                    break;
+                case 3:
+                    res = '16px;'
+                    break;
+                case 4:
+                    res = '18px;'
+                    break;
+                case 5:
+                    res = '24px;'
+                    break;
+                case 6:
+                    res = '32px;'
+                    break;
+                default:
+                    res = 'inherit;'
+                    break;
+            }
+            return res;
+        }
     }
 }
 </script>

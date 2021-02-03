@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div>
+        <font font="宋体" color="green">TEST</font>
+    </div>
+</body>
+
+</html>
+
+<script>
+    /*
+    composition: "<b id="waqgn"><font size="5" color="#8baa4a">TEST</font></b><hr><p><strike>test</strike></p>"
+
+    */
+    const BFS = {
+        nodes: [],
+        do(roots) {
+            var children = [];
+            for (let i = 0; i < roots.length; i++) {
+                var root = roots[i];
+                // 过滤 text 节点、script 节点
+                if ((root.nodeType != 3) && (root.nodeName != 'SCRIPT')) {
+                    if (root.childNodes.length) children.push(...root.childNodes);
+                    this.nodes.push(root);
+                }
+            }
+            if (children.length) {
+                var tmp = this.do(children);
+            } else {
+                return this.nodes;
+            }
+            return tmp;
+        }
+    }
+    // <h1><b id='waqgn'><font style="font-size:20px;color:red">TEST</font></b></h1><hr><p><strike>test</strike></p>
+    // var domStr = `<div> <font style="font-size: 50px; color:red;">TEST</font> </div>`
+    const getFontSize = function (val) {
+        let res = null
+        switch (val) {
+            case 1:
+                res = '10px;'
+                break;
+            case 2:
+                res = '13px;'
+                break;
+            case 3:
+                res = '16px;'
+                break;
+            case 4:
+                res = '18px;'
+                break;
+            case 5:
+                res = '24px;'
+                break;
+            case 6:
+                res = '32px;'
+                break;
+            default:
+                res = 'inherit;'
+                break;
+        }
+        return res;
+    }
+    var domStr =
+        `<h1><b id="waqgn"><font face="宋体" size="5" color="#8baa4a">TEST</font></b></h1><hr><p><strike>test</strike></p>`
+    var dom = new DOMParser().parseFromString(domStr, "text/html");
+    var domTree = BFS.do(dom.childNodes);
+    console.log(dom.childNodes);
+    console.log(domTree);
+    // console.log(dom.outerHTML);
+    console.log('----------------');
+
+    domTree.forEach(v => {
+        if (v.tagName == "FONT") {
+            v.setAttribute("style", "font-family:" + (v.getAttribute("face") || "inherit") + ";" +
+                "font-size:" + getFontSize(Number(v.getAttribute("size"))))
+        }
+    })
+    console.log('transformed dom', dom.body.innerHTML);
+</script>

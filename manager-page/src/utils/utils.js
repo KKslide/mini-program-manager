@@ -118,4 +118,28 @@ Date.prototype.Format = function (fmt) {
     return fmt;
 };
 
-export { IsURL, deepClone, toUnicode, utf16toEntities, entitiesToUtf16 }
+/**
+ * dom树遍历
+ */
+const BFS = {
+    nodes: [],
+    do (roots) {
+        var children = [];
+        for (let i = 0; i < roots.length; i++) {
+            var root = roots[i];
+            // 过滤 text 节点、script 节点
+            if ((root.nodeType != 3) && (root.nodeName != 'SCRIPT')) {
+                if (root.childNodes.length) children.push(...root.childNodes);
+                this.nodes.push(root);
+            }
+        }
+        if (children.length) {
+            var tmp = this.do(children);
+        } else {
+            return this.nodes;
+        }
+        return tmp;
+    }
+}
+
+export { IsURL, deepClone, toUnicode, utf16toEntities, entitiesToUtf16, BFS }
