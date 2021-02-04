@@ -82,7 +82,7 @@
         return res;
     }
     // var domStr = `<p><font size="6" color="#1c487f" face="仿宋">AAA</font></p>`;
-    var domStr = `<font face="华文楷体" size="5" style="font-family: 华文楷体; font-size: 24px; color: inherit; background-color: rgb(139, 170, 74);">测试双引号"AAA"...</font>`;
+    var domStr = `<font face="华文楷体" size="5" color="red" style="background-color:yellow;">测试双引号"AAA"...</font>`;
     var dom = new DOMParser().parseFromString(domStr, "text/html");
     var domTree = BFS.do(dom.childNodes);
     console.log(dom.childNodes);
@@ -92,13 +92,12 @@
 
     domTree.forEach(v => {
         if (v.tagName == "FONT") {
-            let _color = (getStyle(v, 'color') || 'inherit')
-            let _fontSize = (getStyle(v, 'font-size') || 'inherit')
-            let _fontFamily = getStyle(v, 'font-family') || 'inherit'
+            let _color = v.getAttribute("color") || 'inherit'
+            let _fontSize = v.getAttribute("size") || 'inherit'
+            let _fontFamily = v.getAttribute("face") || 'inherit'
             let _backgroundColor = getStyle(v, 'background-color') || 'inherit'
-            let _styleObj = 
-            v.setAttribute("style", ` color: ${_color}; font-size: ${_fontSize}; font-family: ${_fontFamily}; background-color: ${_backgroundColor}; `)
-            console.log(_backgroundColor);
+            let _styleObj = v.setAttribute("style", ` color: ${_color}; font-size: ${_fontSize}; font-family: ${_fontFamily}; background-color: ${_backgroundColor}; `)
+            // console.log(_backgroundColor);
             // v.setAttribute("style", "font-family:" + (v.getAttribute("face") || "inherit") + ";" +
             //     "font-size:" + getFontSize(Number(v.getAttribute("size"))) + "color:" + (v.getAttribute("color") || 'inherit') + ";")
         }

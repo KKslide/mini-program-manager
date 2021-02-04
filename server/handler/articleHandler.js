@@ -123,7 +123,7 @@ module.exports.addArticle = function (req, res) {
         category: req.body.category || "",
         description: req.body.description || "",
         video_src: req.body.video_src || "",
-        composition: req.body.composition.replace(/"/g, "\u005C\u0022") || "", // 文章字符串中的双引号需要转义, 否则会出事
+        composition: req.body.composition.replace(/"/g, "\u005C\u0022").replace(/[\r\n]/g,"\\n") || "", // 文章字符串中的双引号需要转义, 否则会出事
         poster: req.body.poster || req.query.poster || "",
         isShow: req.body.isShow || req.query.isShow || "1",
         user: JSON.parse(req.cookies.userInfo).username || 'unknown',
@@ -180,7 +180,7 @@ module.exports.editArticle = function (req, res) {
         description: req.query.description || req.body.description || "",
         video_src: req.query.video_src || req.body.video_src || "",
         poster: req.query.poster || req.body.poster || "",
-        composition: req.body.composition.replace(/"/g, "\u005C\u0022") || "",
+        composition: req.body.composition.replace(/"/g, "\u005C\u0022").replace(/[\r\n]/g,"\\n") || "",
         isShow: req.query.isShow || req.body.isShow || "1",
         isHot: req.query.isHot || req.body.isHot || "1",
         edittime: new Date().getTime(),

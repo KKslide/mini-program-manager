@@ -256,6 +256,7 @@
 <script>
 import CommentCom from './CommentManage' // 评论模块
 import Cropper from './cropper/Cropper' // 裁切模块
+// import hljs from 'highlight.js'
 import cropper_config from './cropper/cropper_config' // Cropper插件的配置
 import { IsURL, deepClone, BFS, getStyle } from "../../../utils/utils" // util函数
 export default {
@@ -518,7 +519,7 @@ export default {
                         return
                     }
                     if (this.dialogType == 'add') { // 添加文章
-                        this.form.composition = this.transFormedArticle(this.form.composition);
+                        // this.form.composition = this.transFormedArticle(this.form.composition);
                         this.$axios({
                             url: "/admin/articles/add",
                             method: "post",
@@ -543,7 +544,7 @@ export default {
                         })
                     }
                     if (this.dialogType == 'edit') { // 编辑文章
-                        this.form.composition = this.transFormedArticle(this.form.composition);
+                        // this.form.composition = this.transFormedArticle(this.form.composition);
                         this.$axios({
                             url: '/admin/articles/edit',
                             method: 'post',
@@ -758,26 +759,26 @@ export default {
         /* ************* cropper截图上传 ************** */
 
         transFormedArticle(composition) { // 转换垃圾font标签的属性为style属性
-            console.log('origin dom: ', composition);
+            // console.log('origin dom: ', composition);
             let dom = new DOMParser().parseFromString(composition, "text/html");
             let domTree = BFS.do(dom.childNodes);
             // console.log(dom.childNodes);
             // console.log(domTree);
             domTree.forEach(v => {
                 if (v.tagName == "FONT") {
-                    let _color = (getStyle(v, 'color') || 'inherit')
-                    let _fontSize = (getStyle(v, 'font-size') || 'inherit') + 'px'
-                    let _fontFamily = getStyle(v, 'font-family') || 'inherit'
+                    let _color = (v.getAttribute("color") || 'inherit')
+                    let _fontSize = (this.getFontSize(v.getAttribute("size")) || 'inherit')
+                    let _fontFamily = v.getAttribute("face") || 'inherit'
                     let _backgroundColor = getStyle(v, 'background-color') || 'inherit'
                     v.setAttribute("style", ` color: ${_color}; font-size: ${_fontSize}; font-family: ${_fontFamily}; background-color: ${_backgroundColor}; `)
                 }
             })
-            console.log('transformed dom: ', dom.body.innerHTML);
+            // console.log('transformed dom: ', dom.body.innerHTML);
             return dom.body.innerHTML;
         },
         getFontSize(val) { // 过滤font标签字体的大小
             let res = null
-            switch (val) {
+            switch (parseInt(val)) {
                 case 1:
                     res = '10px;'
                     break;
