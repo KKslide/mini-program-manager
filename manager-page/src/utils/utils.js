@@ -123,7 +123,7 @@ Date.prototype.Format = function (fmt) {
  */
 const BFS = {
     nodes: [],
-    do (roots) {
+    do(roots) {
         var children = [];
         for (let i = 0; i < roots.length; i++) {
             var root = roots[i];
@@ -142,4 +142,35 @@ const BFS = {
     }
 }
 
-export { IsURL, deepClone, toUnicode, utf16toEntities, entitiesToUtf16, BFS }
+/**
+ * 驼峰命名法
+ * @param {String} str 传入字符串
+ */
+const camelize = function (str) {
+    return str.replace(/-(\w)/g, function (strMatch, p1) {
+        return p1.toUpperCase();
+    });
+}
+
+/**
+ * 获取dom最终样式属性值
+ * @param {Document} elem dom对象
+ * @param {String} property 需要查询的属性值
+ */
+const getStyle = function (elem, property) {
+    if (!elem || !property) {
+        return false;
+    }
+    var value = elem.style[camelize(property)], // 先获取是否有内联样式
+        css; // 获取的所有计算样式
+    // 无内联样式，则获取层叠样式表计算后的样式
+    if (!value) {
+        if (document.defaultView && document.defaultView.getComputedStyle) {
+            css = document.defaultView.getComputedStyle(elem, null);
+            value = css ? css.getPropertyValue(property) : null;
+        }
+    }
+    return value;
+}
+
+export { IsURL, deepClone, toUnicode, utf16toEntities, entitiesToUtf16, BFS, camelize, getStyle }

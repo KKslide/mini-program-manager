@@ -255,8 +255,9 @@
 
 <script>
 import CommentCom from './CommentManage' // 评论模块
-import Cropper from './Cropper' // 裁切模块
-import { IsURL, deepClone, BFS } from "../../../utils/utils" // util函数
+import Cropper from './cropper/Cropper' // 裁切模块
+import cropper_config from './cropper/cropper_config' // Cropper插件的配置
+import { IsURL, deepClone, BFS, getStyle } from "../../../utils/utils" // util函数
 export default {
     data() {
         return {
@@ -352,39 +353,7 @@ export default {
         }
     },
     //   *************cropper组件配置****************
-    props: {
-        targetUrl: {
-            // 上传地址
-            type: String,
-            default: '/pic/upload' // 线上环境
-            // default: '/admin/img_upload' // 本地测试
-        },
-        multiple: {
-            // 多图开关
-            type: Boolean,
-            default: false
-        },
-        initUrl: {
-            // 初始图片链接
-            default: ''
-        },
-        fixedNumber: {
-            // 剪裁框比例设置
-            default: function () {
-                return [5, 4]
-            }
-        },
-        width: {
-            // 单图剪裁框宽度
-            type: Number,
-            default: 120
-        },
-        height: {
-            // 单图剪裁框高度
-            type: Number,
-            default: 96
-        }
-    },
+    props: cropper_config,
     //   *************cropper组件配置****************
     components: {
         Cropper,
@@ -549,8 +518,7 @@ export default {
                         return
                     }
                     if (this.dialogType == 'add') { // 添加文章
-                        // this.form.isShow = this.isShow;
-                        // this.form.isHot = this.isHot;
+                        this.form.composition = this.transFormedArticle(this.form.composition);
                         this.$axios({
                             url: "/admin/articles/add",
                             method: "post",
@@ -575,20 +543,7 @@ export default {
                         })
                     }
                     if (this.dialogType == 'edit') { // 编辑文章
-                        console.log(this.form.composition );
-                        console.log('---------------------');
-                        let dom = new DOMParser().parseFromString(this.form.composition,"text/html");
-                        let domTree =  BFS.do(dom.childNodes);
-                        console.log(dom.childNodes);
-                        console.log(domTree);
-                        domTree.forEach(v=>{
-                            if (v.tagName == "FONT") {
-                                v.setAttribute("style", "font-family:" + (v.getAttribute("face") || "inherit") + ";" +
-                                    "font-size:" + this.getFontSize(Number(v.getAttribute("size")))+"color:"+(v.getAttribute("color")||'inherit')+";")
-                            }
-                        })
-                        console.log(dom.body.innerHTML);
-                        this.form.composition = dom.body.innerHTML;
+                        this.form.composition = this.transFormedArticle(this.form.composition);
                         this.$axios({
                             url: '/admin/articles/edit',
                             method: 'post',
@@ -683,8 +638,9 @@ export default {
                     showFullScreen: true, // 是否显示全屏按钮
                     uploadImgAccept: ["jpg", "jpeg", "png", "gif", "bmp"], // 限制上传图片类型
                     uploadImgMaxLength: 1, // 一次最多上传 1张图片
-                    uploadImgServer: "/pic/upload", // 图片上传接口图片
-                    // uploadImgServer: "/admin/img_upload", // 图片上传接口图片
+                    // uploadImgServer: "/pic/upload", // 图片上传接口图片
+                    uploadImgServer: "/admin/img_upload", // 图片上传接口图片
+                    zIndex : 500, // 编辑器层级
                     // linkImgCallback: this.internetPic, // 上传网络图片成功回调
                     uploadImgMaxSize: 2 * 1024 * 1024, // 限制上传图片大小为 2M
                     uploadImgTimeout: 60 * 1000, // 上传图片超时时间
@@ -801,7 +757,25 @@ export default {
         },
         /* ************* cropper截图上传 ************** */
 
-        getFontSize(val) { // 过滤标签字体的大小
+        transFormedArticle(composition) { // 转换垃圾font标签的属性为style属性
+            console.log('origin dom: ', composition);
+            let dom = new DOMParser().parseFromString(composition, "text/html");
+            let domTree = BFS.do(dom.childNodes);
+            // console.log(dom.childNodes);
+            // console.log(domTree);
+            domTree.forEach(v => {
+                if (v.tagName == "FONT") {
+                    let _color = (getStyle(v, 'color') || 'inherit')
+                    let _fontSize = (getStyle(v, 'font-size') || 'inherit') + 'px'
+                    let _fontFamily = getStyle(v, 'font-family') || 'inherit'
+                    let _backgroundColor = getStyle(v, 'background-color') || 'inherit'
+                    v.setAttribute("style", ` color: ${_color}; font-size: ${_fontSize}; font-family: ${_fontFamily}; background-color: ${_backgroundColor}; `)
+                }
+            })
+            console.log('transformed dom: ', dom.body.innerHTML);
+            return dom.body.innerHTML;
+        },
+        getFontSize(val) { // 过滤font标签字体的大小
             let res = null
             switch (val) {
                 case 1:

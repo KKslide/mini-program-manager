@@ -11,15 +11,28 @@
     <div>
         <font font="宋体" color="green">TEST</font>
     </div>
+    <h1><b id='waqgn'>
+            <font size='5' color='#8baa4a' style='font-family:inherit;font-size:24px;color:#8baa4a;'>TEST</font>
+        </b></h1>
+    <hr>
+    <p><strike>test&nbsp;</strike></p>
+    <h2 id='jgheb'>
+        <font size='6' style='font-family:inherit;font-size:32px;color:inherit;'>HHHHHHH</font>
+    </h2>
+    <div><strike>it`s just a fucking tesst......</strike></div>
+    <div>
+        <p><i>这只是个测试而已...</i></p>
+        <p><i><br></i></p>
+        <p>
+            <font face='华文楷体' style='font-family:华文楷体;font-size:24px;color:inherit;' size='5'>这只是个测试而已...</font>
+            <i><br></i>
+        </p>
+    </div>
 </body>
 
 </html>
 
 <script>
-    /*
-    composition: "<b id="waqgn"><font size="5" color="#8baa4a">TEST</font></b><hr><p><strike>test</strike></p>"
-
-    */
     const BFS = {
         nodes: [],
         do(roots) {
@@ -40,8 +53,7 @@
             return tmp;
         }
     }
-    // <h1><b id='waqgn'><font style="font-size:20px;color:red">TEST</font></b></h1><hr><p><strike>test</strike></p>
-    // var domStr = `<div> <font style="font-size: 50px; color:red;">TEST</font> </div>`
+
     const getFontSize = function (val) {
         let res = null
         switch (val) {
@@ -69,8 +81,8 @@
         }
         return res;
     }
-    var domStr =
-        `<h1><b id="waqgn"><font face="宋体" size="5" color="#8baa4a">TEST</font></b></h1><hr><p><strike>test</strike></p>`
+    // var domStr = `<p><font size="6" color="#1c487f" face="仿宋">AAA</font></p>`;
+    var domStr = `<font face="华文楷体" size="5" style="font-family: 华文楷体; font-size: 24px; color: inherit; background-color: rgb(139, 170, 74);">测试双引号"AAA"...</font>`;
     var dom = new DOMParser().parseFromString(domStr, "text/html");
     var domTree = BFS.do(dom.childNodes);
     console.log(dom.childNodes);
@@ -80,9 +92,39 @@
 
     domTree.forEach(v => {
         if (v.tagName == "FONT") {
-            v.setAttribute("style", "font-family:" + (v.getAttribute("face") || "inherit") + ";" +
-                "font-size:" + getFontSize(Number(v.getAttribute("size"))))
+            let _color = (getStyle(v, 'color') || 'inherit')
+            let _fontSize = (getStyle(v, 'font-size') || 'inherit')
+            let _fontFamily = getStyle(v, 'font-family') || 'inherit'
+            let _backgroundColor = getStyle(v, 'background-color') || 'inherit'
+            let _styleObj = 
+            v.setAttribute("style", ` color: ${_color}; font-size: ${_fontSize}; font-family: ${_fontFamily}; background-color: ${_backgroundColor}; `)
+            console.log(_backgroundColor);
+            // v.setAttribute("style", "font-family:" + (v.getAttribute("face") || "inherit") + ";" +
+            //     "font-size:" + getFontSize(Number(v.getAttribute("size"))) + "color:" + (v.getAttribute("color") || 'inherit') + ";")
         }
     })
     console.log('transformed dom', dom.body.innerHTML);
+
+    function getStyle(elem, property) {
+        if (!elem || !property) {
+            return false;
+        }
+        var value = elem.style[camelize(property)], // 先获取是否有内联样式
+            css; // 获取的所有计算样式
+        // 无内联样式，则获取层叠样式表计算后的样式
+        if (!value) {
+            if (document.defaultView && document.defaultView.getComputedStyle) {
+                css = document.defaultView.getComputedStyle(elem, null);
+                value = css ? css.getPropertyValue(property) : null;
+            }
+        }
+        return value;
+    }
+
+    function camelize(str) {
+        return str.replace(/-(\w)/g, function (strMatch, p1) {
+            return p1.toUpperCase();
+        });
+    }
+
 </script>

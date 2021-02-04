@@ -93,14 +93,16 @@ router.post("/img_upload", function (req, res) {
             res.json({ code: 0, msg: "上传失败！" })
         } else {
             var ip = req.headers['x-real-ip'] ? req.headers['x-real-ip'] : req.ip.replace(/::ffff:/, ''); // 有问题
-            res.json({
-                code: 1,
-                msg: "上传成功！",
-                errno: 0,
-                path: 'http://' + ip + '/' + path.basename(image.path),
-                imageUrl: 'http://' + ip + '/' + path.basename(image.path),
-                data: ['http://' + ip + '/' + path.basename(image.path)]
-            })
+            setTimeout(() => {
+                res.json({
+                    code: 1,
+                    msg: "上传成功！",
+                    errno: 0,
+                    path: 'http://' + ip + '/' + path.basename(image.path),
+                    imageUrl: 'http://' + ip + '/' + path.basename(image.path),
+                    data: ['http://' + ip + ':9999' + '/' + path.basename(image.path)]
+                })
+            }, 1500);
         }
     })
 });
