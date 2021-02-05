@@ -635,7 +635,17 @@ export default {
                 this.editor = new wangEditor("#wangEditor");
                 // this.editor.highlight = hljs; // 代码高亮
                 Object.assign(this.editor.config, {
-                    height:180,
+                    height:180, // 编辑器高度
+                    fontNames: [
+                        '黑体',
+                        '宋体',
+                        '楷体',
+                        'Arial',
+                        'Impact',
+                        'Tahoma',
+                        'Verdana',
+                        'Courier New',
+                    ],
                     showFullScreen: true, // 是否显示全屏按钮
                     uploadImgAccept: ["jpg", "jpeg", "png", "gif", "bmp"], // 限制上传图片类型
                     uploadImgMaxLength: 1, // 一次最多上传 1张图片
@@ -647,7 +657,7 @@ export default {
                     uploadImgMaxSize: 2 * 1024 * 1024, // 限制上传图片大小为 2M
                     uploadImgTimeout: 60 * 1000, // 上传图片超时时间
                     uploadFileName: "file",
-                    uploadImgHooks:{
+                    uploadImgHooks:{ // 图片上传回调
                         before: _ => {
                             this.editorLoading = this.$loading({
                                 lock: true,
