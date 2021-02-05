@@ -643,6 +643,7 @@ export default {
                     uploadImgServer: "/admin/img_upload", // 图片上传接口图片
                     zIndex : 500, // 编辑器层级
                     // linkImgCallback: this.internetPic, // 上传网络图片成功回调
+                    pasteFilterStyle: false, // 关闭粘贴样式过滤
                     uploadImgMaxSize: 2 * 1024 * 1024, // 限制上传图片大小为 2M
                     uploadImgTimeout: 60 * 1000, // 上传图片超时时间
                     uploadFileName: "file",

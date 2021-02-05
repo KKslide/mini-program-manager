@@ -96,7 +96,7 @@
             let _fontSize = v.getAttribute("size") || 'inherit'
             let _fontFamily = v.getAttribute("face") || 'inherit'
             let _backgroundColor = getStyle(v, 'background-color') || 'inherit'
-            let _styleObj = v.setAttribute("style", ` color: ${_color}; font-size: ${_fontSize}; font-family: ${_fontFamily}; background-color: ${_backgroundColor}; `)
+            let _styleObj = v.setAttribute("style", ` color: ${_color}; font-size: ${_fontSize}; font-family: ${_fontFamily}; background-color: ${_backgroundColor}; ` )
             // console.log(_backgroundColor);
             // v.setAttribute("style", "font-family:" + (v.getAttribute("face") || "inherit") + ";" +
             //     "font-size:" + getFontSize(Number(v.getAttribute("size"))) + "color:" + (v.getAttribute("color") || 'inherit') + ";")
@@ -125,5 +125,4 @@
             return p1.toUpperCase();
         });
     }
-
 </script>
