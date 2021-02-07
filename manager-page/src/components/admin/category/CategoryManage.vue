@@ -27,6 +27,14 @@
                     ></el-image>
                 </template>
             </el-table-column>
+            <el-table-column prop="list_type" label="展示类型">
+                <template slot-scope="scope">
+                    <span v-if="scope.row.list_type=='0'">首页</span>
+                    <span v-else-if="scope.row.list_type=='1'">瀑布流</span>
+                    <span v-else-if="scope.row.list_type=='2'">图文型</span>
+                    <span v-else-if="scope.row.list_type=='3'">日志型</span>
+                </template>
+            </el-table-column>
             <el-table-column prop="isShow" label="是否显示">
                 <template slot-scope="scope">
                     <span v-if="scope.row.isShow=='1'" style="color:#5fc971">是</span>
@@ -182,6 +190,7 @@ export default {
                             index:v.index,
                             addtime: v.addtime ,
                             edittime: v.edittime,
+                            list_type: v. list_type,
                             isShow: v.isShow
                         }
                     });
