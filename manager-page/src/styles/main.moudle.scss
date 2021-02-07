@@ -130,7 +130,8 @@ p {
 
 /* 作品管理 下拉框的最后一个显示不完全 看着难受 */
 .workManageDialog,
-.contentManageDialog {
+.contentManageDialog,
+.categoryManageDialog {
     ul.el-select-dropdown__list {
         padding-bottom: 12px;
     }

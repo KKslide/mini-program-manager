@@ -134,6 +134,7 @@ module.exports.addCate = function (req, res) {
         banner: req.body.banner || "",
         index: req.body.index || 0,
         isShow: req.body.isShow || "1",
+        list_type: req.body.list_type || "1",
         addtime: new Date(),
         edittime: new Date()
     }
@@ -183,6 +184,7 @@ module.exports.editCate = function (req, res) {
         name: req.body.name || "",
         isShow: req.body.isShow || "1",
         banner: req.body.banner || "",
+        list_type: req.body.list_type || "",
         edittime: new Date()
     };
     let query = `db.collection('category').where({_id:'${req.body.id}'}).update({data:${JSON.stringify(obj)}})`;

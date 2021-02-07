@@ -29,7 +29,7 @@
             </el-table-column>
             <el-table-column prop="list_type" label="展示类型">
                 <template slot-scope="scope">
-                    <span v-if="scope.row.list_type=='0'">首页</span>
+                    <span v-if="scope.row.list_type=='0'">默认首页</span>
                     <span v-else-if="scope.row.list_type=='1'">瀑布流</span>
                     <span v-else-if="scope.row.list_type=='2'">图文型</span>
                     <span v-else-if="scope.row.list_type=='3'">日志型</span>
@@ -56,6 +56,17 @@
             <el-form :model="categoryDetail" ref="categoryDetail" label-width="120px" :rules="rules" @submit.native.prevent="">
                 <el-form-item label="分类名称" prop="name">
                     <el-input v-model="categoryDetail.name" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="展示类型" prop="list_type">
+                    <el-select v-model="categoryDetail.list_type" popper-class="categoryManageDialog" placeholder="请选择展示类型">
+                        <el-option
+                            v-for="item in listTypeOptions"
+                            :key="item.value"
+                            :label="item.name"
+                            :value="item.value"
+                        >
+                        </el-option>
+                    </el-select>
                 </el-form-item>
                 <el-form-item label="是否显示" prop="isShow">
                     <el-switch
@@ -152,6 +163,12 @@ export default {
             reupload: true, // 控制"重新上传"开关
             reuploadWidth: this.height * 0.7, // 动态改变”重新上传“大小
             categoryData: [],
+            listTypeOptions:[
+                { name:'默认', value:'0', },
+                { name:'瀑布流', value:'1', },
+                { name:'图文型', value:'2', },
+                { name:'日志型', value:'3', }
+            ],
             isShow:true, // 是否显示控件
             categoryDetail: {
                 id: "",
@@ -225,6 +242,7 @@ export default {
                         'name':this.categoryDetail.name,
                         'banner':this.categoryDetail.banner,
                         "isShow": this.categoryDetail.isShow,
+                        "list_type": this.categoryDetail.list_type,
                         'index': this.categoryData.length // 默认排序在最后一个
                     },
                     method:'post'
@@ -246,6 +264,7 @@ export default {
                         "id": this.categoryDetail.id,
                         "name": this.categoryDetail.name,
                         "isShow": this.categoryDetail.isShow,
+                        "list_type": this.categoryDetail.list_type,
                         "banner": this.categoryDetail.banner,
                     }
                 }).then(res => {
@@ -317,6 +336,7 @@ export default {
             this.categoryDetail.name=row.name;
             this.categoryDetail.isShow=row.isShow;
             this.categoryDetail.banner=row.banner;
+            this.categoryDetail.list_type=row.list_type;
         },
         setIdColumn({ row, column, rowIndex }) { // 设置栏目样式
             if (column.property == 'id') {
