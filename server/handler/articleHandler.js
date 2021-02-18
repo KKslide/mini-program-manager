@@ -123,20 +123,23 @@ module.exports.addArticle = function (req, res) {
         category: req.body.category || "",
         description: req.body.description || "",
         video_src: req.body.video_src || "",
-        composition: req.body.composition.replace(/"/g, "\u005C\u0022").replace(/[\r\n]/g,"\\n").replace(/(<xmp>|<\/xmp>)/g,'') || "", // 文章字符串中的双引号需要转义, 否则会出事
+        composition: req.body.composition.replace(/"/g, '\u005c"').replace(/[\r\n]/g,"\\n").replace(/(<xmp>|<\/xmp>)/g,'') || "", // 文章字符串中的双引号需要转义, 否则会出事
         poster: req.body.poster || req.query.poster || "",
         isShow: req.body.isShow || req.query.isShow || "1",
+        isHot: req.body.isHot || req.query.isHot || "0",
         user: JSON.parse(req.cookies.userInfo).username || 'unknown',
         isDel: "0",
         addtime: new Date().getTime(), // unix时间戳,单位是毫秒,转换成描述需要除以1000
         edittime: new Date().getTime(), // unix时间戳
         viewnum: 0,
     };
-    let query = `db.collection("content").add({data:[${JSON.stringify(newcontent).replace(/\\/g, "").replace(/`/g, "\u005C\u0060")}]})`;
+    // console.log('newcontent',newcontent);
+    let query = `db.collection("content").add({data:[${JSON.stringify(newcontent).replace(/\\/g, "\u005c").replace(/`/g, "\u005C\u0060")}]})`;
+    // console.log('query-------',query);
     getTokenString(_ => {
         axiosHandler('databaseadd', query)
             .then(response => {
-                console.log(response.data);
+                console.log('新增文章响应结果: ',response.data);
                 if (response.data.errmsg == 'ok') {
                     res.json({
                         code: 1,
@@ -180,13 +183,13 @@ module.exports.editArticle = function (req, res) {
         description: req.query.description || req.body.description || "",
         video_src: req.query.video_src || req.body.video_src || "",
         poster: req.query.poster || req.body.poster || "",
-        composition: req.body.composition.replace(/"/g, "\u005C\u0022").replace(/[\r\n]/g,"\\n").replace(/(<xmp>|<\/xmp>)/g,'') || "",
+        composition: req.body.composition.replace(/"/g, '\u005c"').replace(/[\r\n]/g,"\\n").replace(/(<xmp>|<\/xmp>)/g,'') || "",
         isShow: req.query.isShow || req.body.isShow || "1",
         isHot: req.query.isHot || req.body.isHot || "1",
         edittime: new Date().getTime(),
         user: JSON.parse(req.cookies.userInfo).username || "kk"
     }
-    let query = `db.collection("content").doc('${id}').update({data:${JSON.stringify(obj).replace(/`/g, "\u005C\u0060")}})`;
+    let query = `db.collection("content").doc('${id}').update({data:${JSON.stringify(obj).replace(/\\/g, "\u005c").replace(/`/g, "\u005C\u0060")}})`;
     getTokenString(_ => {
         axiosHandler('databaseupdate', query)
             .then(response => {

@@ -649,11 +649,11 @@ export default {
                     showFullScreen: true, // 是否显示全屏按钮
                     uploadImgAccept: ["jpg", "jpeg", "png", "gif", "bmp"], // 限制上传图片类型
                     uploadImgMaxLength: 1, // 一次最多上传 1张图片
-                    // uploadImgServer: "/pic/upload", // 图片上传接口图片
-                    uploadImgServer: "/admin/img_upload", // 图片上传接口图片
+                    uploadImgServer: "/pic/upload", // 图片上传接口图片
+                    // uploadImgServer: "/admin/img_upload", // 图片上传接口图片
                     zIndex : 500, // 编辑器层级
                     // linkImgCallback: this.internetPic, // 上传网络图片成功回调
-                    pasteFilterStyle: false, // 关闭粘贴样式过滤
+                    // pasteFilterStyle: true, // 关闭粘贴样式过滤| 感觉没卵用啊..
                     uploadImgMaxSize: 2 * 1024 * 1024, // 限制上传图片大小为 2M
                     uploadImgTimeout: 60 * 1000, // 上传图片超时时间
                     uploadFileName: "file",
@@ -688,7 +688,6 @@ export default {
                     linkCheck (text, link) {
                         return IsURL(link) ? true : "插入的不是URL地址, 请重新输入";
                     },
-                    pasteFilterStyle: false, // 关闭粘贴样式过滤
                     pasteIgnoreImg: false, // 忽略粘贴的图片 - 先不忽略
                     onblur: html => this.form.composition = html, // 编辑区域 和 blur（失焦）- 同步form表单
                     onfocus: html => this.form.composition = html, // 编辑区域 focus（聚焦）- 同步form表单
